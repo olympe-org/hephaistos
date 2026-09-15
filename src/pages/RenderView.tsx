@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { DownloadIcon } from "lucide-react";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8001";
 
@@ -25,6 +26,8 @@ async function saveVideo(blob: Blob) {
 }
 
 export default function RenderView() {
+  usePageMeta({ title: "Ta vidéo · Vexia", path: "/render", indexable: false });
+
   const { jobId } = useParams<{ jobId: string }>();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");

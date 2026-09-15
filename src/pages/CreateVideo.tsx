@@ -8,6 +8,7 @@ import CreateVideoSelects from "@/components/CreateVideoSelects";
 import ImportJsonDialog from "@/components/ImportJsonDialog";
 import RenderJobContent from "@/components/RenderJobContent";
 import { Button } from "@/components/ui/button";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { useAppDispatch, useAppSelector } from "@/store";
 import {
   applyTemplateDefaults,
@@ -26,6 +27,8 @@ const RUNNING_STATUSES = ["pending", "downloading", "processing"];
 
 // 3-step creation flow: template & mode → data & settings → render
 export default function CreateVideo() {
+  usePageMeta({ title: "Créer une vidéo · Vexia", path: "/create-video", indexable: false });
+
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const createVideoState = useAppSelector((s) => s.createVideo);

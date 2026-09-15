@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import PageHeader from "@/components/PageHeader";
 import VideoPreviewPanel from "@/components/VideoPreviewPanel";
 import { useLiveJobs } from "@/hooks/useLiveJobs";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { useVideoPreview } from "@/hooks/useVideoPreview";
 import {
   createAdminUser,
@@ -23,6 +24,8 @@ const REFRESH_DELAY_MS = 5_000;
 
 // Admin dashboard: site figures, server status, account management
 export default function Admin() {
+  usePageMeta({ title: "Administration · Vexia", path: "/admin", indexable: false });
+
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);

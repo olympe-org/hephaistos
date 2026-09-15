@@ -7,6 +7,7 @@ import PageHeader from "@/components/PageHeader";
 import VideoPreviewPanel from "@/components/VideoPreviewPanel";
 import { Button } from "@/components/ui/button";
 import { useLiveJobs } from "@/hooks/useLiveJobs";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { useVideoPreview } from "@/hooks/useVideoPreview";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { logout } from "@/store/authSlice";
@@ -17,6 +18,8 @@ import VideosList from "./user/VideosList";
 
 // Profile: activity, account, list of renders and preview of the selected video
 export default function UserPage() {
+  usePageMeta({ title: "Mon profil · Vexia", path: "/user", indexable: false });
+
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const storeUsername = useAppSelector((s) => s.auth.username);

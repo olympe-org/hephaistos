@@ -1,8 +1,9 @@
-import Admin from "./Admin";
-import CreateVideo from "./CreateVideo";
 import Home from "./Home";
 import Login from "./Login";
-import RenderView from "./RenderView";
-import UserPage from "./UserPage";
+import NotFound from "./NotFound";
 
-export { Admin, CreateVideo, Home, Login, RenderView, UserPage };
+// Admin/CreateVideo/RenderView/UserPage are intentionally left out of this
+// barrel: App.tsx imports them directly (`@/pages/Admin`, …) so they can be
+// code-split with `React.lazy` — importing them here would pull them back
+// into the main bundle regardless.
+export { Home, Login, NotFound };

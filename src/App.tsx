@@ -1,10 +1,40 @@
-import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import React, { lazy, Suspense } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
-import { Home, Login, CreateVideo, UserPage, RenderView, Admin } from "@/pages";
+import { LoaderIcon } from "lucide-react";
+import { Home, Login, NotFound } from "@/pages";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminRoute from "@/components/AdminRoute";
 import Layout from "@/components/Layout";
+
+// Home/Login/NotFound stay in the main bundle — they're the entry points a
+// visitor (or a search engine) actually lands on. Everything past that point
+// is the app proper and only needed once someone is using it, so it's split
+// into its own chunk, downloaded on demand instead of upfront.
+const CreateVideo = lazy(() => import("@/pages/CreateVideo"));
+const UserPage = lazy(() => import("@/pages/UserPage"));
+const Admin = lazy(() => import("@/pages/Admin"));
+const RenderView = lazy(() => import("@/pages/RenderView"));
+
+// Shown for the split second a lazy page's chunk is downloading, inside the
+// normal app shell (navbar already visible via Layout).
+function PageFallback() {
+  return (
+    <div className="flex min-h-[calc(100vh-var(--nav-h))] items-center justify-center">
+      <LoaderIcon className="size-6 animate-spin text-muted-foreground" />
+    </div>
+  );
+}
+
+// RenderView renders outside Layout, full-screen and dark — match that here
+// so there's no flash of the light app shell before its chunk loads.
+function RenderViewFallback() {
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black">
+      <LoaderIcon className="size-6 animate-spin text-white/70" />
+    </div>
+  );
+}
 
 export default function App() {
   return (
@@ -44,16 +74,47 @@ export default function App() {
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/create-video" element={<CreateVideo />} />
+            <Route
+              path="/create-video"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <CreateVideo />
+                </Suspense>
+              }
+            />
             <Route element={<ProtectedRoute />}>
-              <Route path="/user" element={<UserPage />} />
+              <Route
+                path="/user"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <UserPage />
+                  </Suspense>
+                }
+              />
             </Route>
             <Route element={<AdminRoute />}>
-              <Route path="/admin" element={<Admin />} />
+              <Route
+                path="/admin"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <Admin />
+                  </Suspense>
+                }
+              />
             </Route>
+            <Route
+              path="*"
+              element={<NotFound />}
+            />
           </Route>
-          <Route path="/render/:jobId" element={<RenderView />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route
+            path="/render/:jobId"
+            element={
+              <Suspense fallback={<RenderViewFallback />}>
+                <RenderView />
+              </Suspense>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </React.StrictMode>
