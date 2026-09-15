@@ -7,25 +7,39 @@ import { useAppSelector } from "@/store";
 import { useRenderNotifier } from "@/hooks/useRenderNotifier";
 import { Button } from "./ui/button";
 
+// Pages where the navbar stays fixed at full width (no floating pill on scroll)
+const STATIC_NAVBAR_ROUTES = ["/create-video"];
+
 export default function Layout() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const token = useAppSelector((s) => s.auth.token);
   useRenderNotifier();
   const showBanner = !token && pathname === "/create-video";
+  const detachable = !STATIC_NAVBAR_ROUTES.includes(pathname);
 
   const [bannerMounted, setBannerMounted] = useState(showBanner);
   const [bannerIn, setBannerIn] = useState(false);
 
+  // Animates the banner in/out: mount it, then (on the next tick) trigger the
+  // CSS transition; when closing, start the transition then unmount once it's
+  // done. Both setState calls are deferred by a tick (instead of being
+  // synchronous) to stay outside of render.
   useEffect(() => {
     if (showBanner) {
-      setBannerMounted(true);
-      const t = setTimeout(() => setBannerIn(true), 30);
-      return () => clearTimeout(t);
+      const mount = setTimeout(() => setBannerMounted(true), 0);
+      const slideIn = setTimeout(() => setBannerIn(true), 30);
+      return () => {
+        clearTimeout(mount);
+        clearTimeout(slideIn);
+      };
     } else {
-      setBannerIn(false);
-      const t = setTimeout(() => setBannerMounted(false), 320);
-      return () => clearTimeout(t);
+      const slideOut = setTimeout(() => setBannerIn(false), 0);
+      const unmount = setTimeout(() => setBannerMounted(false), 320);
+      return () => {
+        clearTimeout(slideOut);
+        clearTimeout(unmount);
+      };
     }
   }, [showBanner]);
 
@@ -34,31 +48,40 @@ export default function Layout() {
       {token && <TokenPolling />}
       {bannerMounted && (
         <div
-          className={`fixed top-0 left-0 right-0 h-10 z-50 flex items-center justify-center gap-3 bg-violet-600/95 backdrop-blur-sm px-4 transition-transform duration-300 ease-out ${
+          className={`fixed inset-x-0 top-0 z-50 flex h-10 items-center justify-center gap-3 bg-foreground px-4 text-background transition-transform duration-300 ease-out ${
             bannerIn ? "translate-y-0" : "-translate-y-full"
           }`}
         >
-          <span className="text-xs font-medium text-white/90 hidden sm:inline">
-            Tu veux créer une vidéo ? Connecte-toi pour accéder à toutes les fonctionnalités.
+          <span className="size-1.5 shrink-0 rounded-full bg-violet-400" />
+          <span className="hidden text-xs font-medium sm:inline">
+            Tu explores en invité — connecte-toi pour lancer un rendu.
           </span>
-          <span className="text-xs font-medium text-white/90 sm:hidden">
-            Connecte-toi pour créer une vidéo.
+          <span className="text-xs font-medium sm:hidden">
+            Connecte-toi pour lancer un rendu.
           </span>
           <Button
             size="sm"
-            variant="secondary"
-            className="h-6 px-3 text-[11px] font-bold shrink-0"
-            onClick={() => navigate("/logging")}
+            className="h-6 shrink-0 rounded-full bg-background px-3 text-[11px] font-semibold text-foreground hover:bg-background/90"
+            onClick={() => navigate("/login")}
           >
             Se connecter
           </Button>
         </div>
       )}
       {pathname !== "/" && <MobileGuard />}
-      <Navbar showBanner={showBanner} bannerIn={bannerIn} />
+      <Navbar
+        showBanner={showBanner}
+        bannerIn={bannerIn}
+        detachable={detachable}
+      />
       <div
         className="transition-[padding-top] duration-300 ease-out"
-        style={{ paddingTop: showBanner && bannerIn ? "6rem" : showBanner ? "3.5rem" : "3.5rem" }}
+        style={{
+          paddingTop:
+            showBanner && bannerIn
+              ? "calc(var(--nav-h) + 2.5rem)"
+              : "var(--nav-h)",
+        }}
       >
         <Outlet />
       </div>

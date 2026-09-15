@@ -5,7 +5,7 @@ import "./index.css";
 import App from "@/App";
 import { store } from "@/store";
 
-// Restaure le thème avant le premier rendu
+// Restore the theme before the first render
 const savedTheme = localStorage.getItem("theme");
 if (savedTheme === "dark") {
   document.body.classList.add("dark");
