@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Allow: /login
+
+# App screens : aucune valeur pour la recherche, et /render contient un token
+# d'accès dans l'URL — à ne surtout pas laisser indexer.
+Disallow: /create-video
+Disallow: /user
+Disallow: /admin
+Disallow: /render/
+
+Sitemap: https://vexia.studio/sitemap.xml

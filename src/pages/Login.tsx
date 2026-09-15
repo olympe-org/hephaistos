@@ -3,6 +3,7 @@ import LoginCard from "@/components/LoginCard";
 import TemplatePreview from "@/components/TemplatePreview";
 import { getPublicMetrics, type PublicMetrics } from "@/utils/api/render";
 import { templates } from "@/utils";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { CARD_SURFACE } from "@/lib/tokens";
 
 const fmt = (n: number) => new Intl.NumberFormat("fr-FR").format(n);
@@ -17,6 +18,12 @@ function formatDuration(seconds: number): string {
 }
 
 export default function Login() {
+  usePageMeta({
+    title: "Connexion · Vexia",
+    description: "Connecte-toi à Vexia pour créer et gérer tes vidéos short-form.",
+    path: "/login",
+  });
+
   const [metrics, setMetrics] = useState<PublicMetrics | null>(null);
 
   useEffect(() => {
