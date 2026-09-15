@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Input } from "./ui/input";
+import ColorPickerTrigger from "./ColorPicker";
 
 function storeToHex(c: string): string {
   if (!c.startsWith("0x")) return "#ffffff";
@@ -43,17 +44,10 @@ export default function ColorSwatchInput({
 
   return (
     <div className="flex items-center gap-2">
-      <div
-        className="relative size-8 shrink-0 rounded border border-border cursor-pointer overflow-hidden"
-        style={{ backgroundColor: hex }}
-      >
-        <input
-          type="color"
-          value={hex}
-          onChange={(e) => handlePicker(e.target.value)}
-          className="absolute inset-0 opacity-0 cursor-pointer size-full"
-        />
-      </div>
+      <ColorPickerTrigger
+        hex={hex}
+        onChange={handlePicker}
+      />
       <Input
         value={inputText}
         onChange={(e) => handleText(e.target.value)}

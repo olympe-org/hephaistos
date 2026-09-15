@@ -96,6 +96,12 @@ input:-webkit-autofill:focus {
 
 @custom-variant dark (&:is(.dark *));
 
+/* Radix expose l'état coché via data-state="checked" ; les composants shadcn
+   (checkbox, radio, switch) ciblent data-checked / data-unchecked → on aligne
+   les deux variantes sur cet attribut. */
+@custom-variant data-checked (&:is([data-state="checked"], [data-checked]));
+@custom-variant data-unchecked (&:is([data-state="unchecked"], [data-unchecked]));
+
 body {
   margin: 0px;
   padding: 0px;
@@ -145,23 +151,25 @@ body {
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --nav-h: 4.5rem;
+  /* Light mode : page off-white chaude, cartes blanches, gris légèrement plus présents */
+  --background: oklch(0.978 0.003 95);
+  --foreground: oklch(0.17 0.005 95);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.17 0.005 95);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.17 0.005 95);
+  --primary: oklch(0.21 0.005 95);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.955 0.004 95);
+  --secondary-foreground: oklch(0.21 0.005 95);
+  --muted: oklch(0.95 0.004 95);
+  --muted-foreground: oklch(0.5 0.01 95);
+  --accent: oklch(0.955 0.004 95);
+  --accent-foreground: oklch(0.21 0.005 95);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
+  --border: oklch(0.905 0.005 95);
+  --input: oklch(0.905 0.005 95);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
@@ -317,15 +325,18 @@ body {
   }
   body {
     @apply bg-background text-foreground;
-    background-image: radial-gradient(
-      circle,
-      var(--border) 1px,
-      transparent 1px
-    );
-    background-size: 28px 28px;
   }
   html {
     @apply font-sans;
+  }
+  input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
   }
 }
 
