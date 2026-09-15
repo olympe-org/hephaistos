@@ -4,7 +4,7 @@ const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8001";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export interface AdminJob {
+interface AdminJob {
   id: string;
   title: string;
   status: string;
@@ -13,7 +13,7 @@ export interface AdminJob {
   duration_seconds?: number;
 }
 
-export interface ActiveAdminJob {
+interface ActiveAdminJob {
   job_id: string;
   title: string;
   status: string;
