@@ -174,9 +174,6 @@ const createVideoSlice = createSlice({
   name: "createVideo",
   initialState,
   reducers: {
-    setTemplateValue(state, action: PayloadAction<string>) {
-      state.templateValue = action.payload;
-    },
     setTemplate(state, action: PayloadAction<string>) {
       const tpl = templates.find((t) => t.label === action.payload);
       if (!tpl) return;
@@ -301,7 +298,6 @@ const createVideoSlice = createSlice({
 });
 
 export const {
-  setTemplateValue,
   setTemplate,
   updateGlobalTitle,
   setModeValue,

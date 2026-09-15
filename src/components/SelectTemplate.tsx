@@ -1,17 +1,11 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldLabel,
-  FieldTitle,
-} from "./ui/field";
 import { capitalize, templates } from "@/utils";
 import { FAKE_PREVIEW } from "@/utils/constants/fakePreview.constants";
 import { setTemplate } from "@/store/createVideoSlice";
 import type { RootState } from "@/store";
+import { cn } from "@/lib/utils";
 import TemplatePreview from "./TemplatePreview";
 
 function FrozenThumbnail({
@@ -48,7 +42,7 @@ function FrozenThumbnail({
   );
 }
 
-const THUMB_H = 96;
+const THUMB_H = 104;
 const THUMB_W = Math.round((THUMB_H * 9) / 16);
 
 export default function SelectTemplate() {
@@ -59,35 +53,36 @@ export default function SelectTemplate() {
 
   return (
     <div>
-      <div className="flex flex-col gap-0.5 mb-3">
-        <div className="flex items-center gap-2">
-          <span className="w-4 h-px bg-violet-400" />
-          <span className="text-[10px] font-bold tracking-[0.2em] text-violet-400 uppercase">
-            Template
-          </span>
-        </div>
-        <h3 className="text-base font-semibold tracking-tight">
-          Sélectionner un template
-        </h3>
+      <div className="mb-4 flex flex-col gap-1">
+        <h2 className="text-lg font-semibold tracking-tight">Template</h2>
+        <p className="text-sm text-muted-foreground">
+          Quatre mises en page, chacune pensée pour un style de contenu.
+          L'aperçu à droite suit ton choix.
+        </p>
       </div>
 
       <RadioGroup
         value={templateValue}
-        className="grid grid-cols-2 gap-3"
+        className="gap-0 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card"
         onValueChange={(value) => dispatch(setTemplate(value))}
       >
-        {templates.map((template) => (
-          <FieldLabel
-            htmlFor={`${template.label}-plan`}
-            key={`${template.label}-key`}
-          >
-            <Field orientation="horizontal">
-              {/* Miniature — GIF animé si sélectionné, premier frame figé sinon */}
+        {templates.map((template) => {
+          const selected = template.label === templateValue;
+          return (
+            <label
+              key={template.label}
+              htmlFor={`${template.label}-plan`}
+              className={cn(
+                "flex cursor-pointer items-center gap-5 p-4 transition-colors",
+                selected ? "bg-muted/60" : "hover:bg-muted/40",
+              )}
+            >
+              {/* Thumbnail — animated if selected, frozen on the first frame otherwise */}
               <div
-                className="hidden xl:block rounded-md overflow-hidden border border-border shrink-0"
+                className="shrink-0 overflow-hidden rounded-lg bg-black ring-1 ring-black/10 dark:ring-white/10"
                 style={{ width: THUMB_W, height: THUMB_H }}
               >
-                {template.label === templateValue ? (
+                {selected ? (
                   <TemplatePreview
                     mode="fake"
                     templateOverride={template.label}
@@ -104,17 +99,33 @@ export default function SelectTemplate() {
                 )}
               </div>
 
-              <FieldContent>
-                <FieldTitle>{capitalize(template.label)}</FieldTitle>
-                <FieldDescription>{template.description}</FieldDescription>
-              </FieldContent>
+              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-base font-semibold tracking-tight">
+                    {capitalize(template.label)}
+                  </span>
+                  {template.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-full border border-border bg-card px-2 py-0.5 text-[11px] font-medium text-muted-foreground"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-[13px] leading-relaxed text-muted-foreground">
+                  {template.description}
+                </p>
+              </div>
+
               <RadioGroupItem
                 value={template.label}
                 id={`${template.label}-plan`}
+                className="size-5 shrink-0"
               />
-            </Field>
-          </FieldLabel>
-        ))}
+            </label>
+          );
+        })}
       </RadioGroup>
     </div>
   );

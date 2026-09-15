@@ -6,9 +6,7 @@ export default function CreateVideoSelects() {
   return (
     <div className="flex flex-col gap-8">
       <SelectTemplate />
-      <div className="h-px bg-border" />
       <SelectMode />
-      <div className="h-px bg-border" />
       <CheckboxSaveData target="step1" />
     </div>
   );

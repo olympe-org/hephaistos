@@ -185,15 +185,13 @@ export default function BillionsClubDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[85dvw] p-0 gap-0 overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-2">
-              <span className="w-4 h-px bg-violet-400" />
-              <span className="text-[10px] font-bold tracking-[0.2em] text-violet-400 uppercase">Données</span>
-            </div>
-            <h2 className="text-base font-semibold tracking-tight leading-none">Billions Club</h2>
-          </div>
+      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[85dvw]">
+        <div className="flex shrink-0 flex-col gap-1 border-b px-6 py-5 pr-16">
+          <h2 className="text-lg font-semibold tracking-tight">Billions Club</h2>
+          <p className="text-sm text-muted-foreground">
+            Les titres à plus d'un milliard de streams sur Spotify. Coche ceux à
+            importer comme extraits.
+          </p>
         </div>
 
         <div className="grid grid-cols-[1fr_auto_1fr] h-[70vh] min-h-0">

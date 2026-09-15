@@ -15,7 +15,7 @@ function handle401() {
   store.dispatch(logout());
   toast.error("Session expirée. Veuillez vous reconnecter.", { id: "session-expired" });
   setTimeout(() => {
-    window.location.href = "/logging";
+    window.location.href = "/login";
     handling401 = false;
   }, 1500);
 }

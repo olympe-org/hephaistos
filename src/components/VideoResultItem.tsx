@@ -36,29 +36,29 @@ export default function VideoResultItem({
     <button
       tabIndex={-1}
       onClick={onSelect}
-      className={`flex items-center gap-2.5 rounded-lg p-2 text-left transition-colors ${
+      className={`flex items-center gap-3 rounded-xl p-2 text-left transition-colors ${
         selected
-          ? "bg-violet-400/10 ring-1 ring-violet-400/30"
-          : "hover:bg-violet-400/5"
+          ? "bg-muted ring-1 ring-foreground/20"
+          : "hover:bg-muted/60"
       }`}
     >
-      <div className="relative shrink-0 w-20 aspect-video rounded overflow-hidden bg-muted">
+      <div className="relative aspect-video w-24 shrink-0 overflow-hidden rounded-lg bg-muted">
         <img
           src={thumbnail(video.videoId)}
           alt={video.title}
-          className="w-full h-full object-cover"
+          className="h-full w-full object-cover"
         />
-        <span className="absolute bottom-0.5 right-0.5 bg-black/80 text-white text-[9px] font-mono px-0.5 rounded">
+        <span className="absolute right-1 bottom-1 rounded bg-black/80 px-1 font-mono text-[10px] text-white">
           {formatDuration(video.lengthSeconds)}
         </span>
       </div>
-      <div className="flex flex-col gap-0.5 min-w-0">
-        <p className="text-xs font-medium leading-snug line-clamp-2">{video.title}</p>
-        <p className="text-[11px] text-muted-foreground truncate">
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <p className="line-clamp-2 text-sm font-medium leading-snug">{video.title}</p>
+        <p className="truncate text-xs text-muted-foreground">
           {video.author}
           {video.authorVerified && <span className="ml-1">✓</span>}
         </p>
-        <p className="text-[10px] text-muted-foreground">{video.viewCountText}</p>
+        <p className="text-xs text-muted-foreground">{video.viewCountText}</p>
       </div>
     </button>
   );

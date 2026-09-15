@@ -11,6 +11,8 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import IconAction from "./IconAction";
+import ColorPickerTrigger from "./ColorPicker";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -82,6 +84,52 @@ function isExtended(style: StyleBase | StyleExtended): style is StyleExtended {
   return "animation" in style;
 }
 
+// ─── UI bits ──────────────────────────────────────────────────────────────────
+
+function Segmented({
+  value,
+  options,
+  onChange,
+}: {
+  value: string;
+  options: { label: string; value: string }[];
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="grid auto-cols-fr grid-flow-col gap-1 rounded-xl border border-border bg-background p-1">
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          onClick={() => onChange(o.value)}
+          className={`h-7 rounded-lg px-2 text-xs font-medium transition-colors ${
+            value === o.value
+              ? "bg-foreground text-background"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      {children}
+    </div>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function StylePopover<T extends StyleBase>({
@@ -106,7 +154,7 @@ export default function StylePopover<T extends StyleBase>({
       : "0xFFFFFF",
   );
 
-  // Sync depuis l'extérieur (applyAll) : on compare la couleur précédente
+  // Sync from the outside (applyAll): compare against the previous color
   const [syncedColor, setSyncedColor] = useState(style.color);
   if (style.color !== syncedColor) {
     setSyncedColor(style.color);
@@ -146,34 +194,28 @@ export default function StylePopover<T extends StyleBase>({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
+        <IconAction
           tabIndex={-1}
-          size="icon-sm"
-          variant="ghost"
-          className="shrink-0 text-violet-400 hover:text-violet-400"
+          aria-label={`Style — ${label}`}
           title={`Style — ${label}`}
         >
-          <PaletteIcon className="size-3.5" />
-        </Button>
+          <PaletteIcon />
+        </IconAction>
       </PopoverTrigger>
       <PopoverContent
-        align="end"
-        className="gap-3 w-64"
+        side="left"
+        align="center"
+        sideOffset={8}
+        collisionPadding={16}
+        className="w-80 max-h-(--radix-popover-content-available-height) gap-4 overflow-y-auto"
       >
         <div className="flex flex-col gap-0.5">
-          <div className="flex items-center gap-2">
-            <span className="w-4 h-px bg-violet-400" />
-            <span className="text-[10px] font-bold tracking-[0.2em] text-violet-400 uppercase">
-              Style
-            </span>
-          </div>
+          <span className="text-xs text-muted-foreground">Style</span>
           <h3 className="text-sm font-semibold tracking-tight">{label}</h3>
         </div>
-        <div className="h-px bg-border -mx-2.5" />
 
         {/* Font */}
-        <div className="flex flex-col gap-1.5">
-          <Label className="text-xs text-muted-foreground">Police</Label>
+        <Field label="Police">
           <Select
             value={style.font}
             onValueChange={(v) => onChange({ ...style, font: v })}
@@ -195,12 +237,11 @@ export default function StylePopover<T extends StyleBase>({
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </Field>
 
         {/* Taille + Bordure */}
         <div className="grid grid-cols-2 gap-2">
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs text-muted-foreground">Taille</Label>
+          <Field label="Taille">
             <Input
               type="number"
               min={1}
@@ -208,11 +249,10 @@ export default function StylePopover<T extends StyleBase>({
               onChange={(e) =>
                 onChange({ ...style, size: Number(e.target.value) })
               }
-              className="h-7 text-xs"
+              className="h-8 text-sm"
             />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs text-muted-foreground">Bordure</Label>
+          </Field>
+          <Field label="Bordure">
             <Input
               type="number"
               min={0}
@@ -220,65 +260,40 @@ export default function StylePopover<T extends StyleBase>({
               onChange={(e) =>
                 onChange({ ...style, border: Number(e.target.value) })
               }
-              className="h-7 text-xs"
+              className="h-8 text-sm"
             />
-          </div>
+          </Field>
         </div>
 
         {/* Couleur */}
-        <div className="flex flex-col gap-1.5">
-          <Label className="text-xs text-muted-foreground">Couleur</Label>
-          <Select
+        <Field label="Couleur">
+          <Segmented
             value={selectedPreset}
-            onValueChange={handleColorPreset}
-          >
-            <SelectTrigger
-              size="sm"
-              className="w-full"
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {COLOR_PRESETS.map((c) => (
-                <SelectItem
-                  key={c.value}
-                  value={c.value}
-                >
-                  {c.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
+            options={COLOR_PRESETS}
+            onChange={handleColorPreset}
+          />
           {selectedPreset === "custom" && (
-            <div className="flex items-center gap-2 mt-1">
-              <div
-                className="relative size-7 shrink-0 rounded border border-border cursor-pointer overflow-hidden"
-                style={{ backgroundColor: customHex }}
-              >
-                <input
-                  type="color"
-                  value={customHex}
-                  onChange={(e) => handlePickerChange(e.target.value)}
-                  className="absolute inset-0 opacity-0 cursor-pointer size-full"
-                />
-              </div>
+            <div className="mt-1 flex items-center gap-2">
+              <ColorPickerTrigger
+                hex={customHex}
+                onChange={handlePickerChange}
+                className="size-8 rounded-lg"
+              />
               <Input
                 value={inputText}
                 onChange={(e) => handleInputText(e.target.value)}
-                className="h-7 font-mono text-xs"
+                className="h-8 font-mono text-xs"
                 placeholder="0xFFFFFF"
                 spellCheck={false}
               />
             </div>
           )}
-        </div>
+        </Field>
 
-        {/* Animation + Position — uniquement pour les styles étendus */}
+        {/* Animation + Position — only for extended styles */}
         {isExtended(style) && (
           <>
-            <div className="flex flex-col gap-1.5">
-              <Label className="text-xs text-muted-foreground">Animation</Label>
+            <Field label="Animation">
               <Select
                 value={style.animation}
                 onValueChange={(v) => onChange({ ...style, animation: v } as T)}
@@ -295,7 +310,7 @@ export default function StylePopover<T extends StyleBase>({
                       key={a.value}
                       value={a.value}
                       onPointerDown={() => {
-                        // Même valeur déjà sélectionnée → force un onChange pour retrigger l'anim
+                        // Same value already selected → force an onChange to retrigger the animation
                         if (isExtended(style) && style.animation === a.value) {
                           onChange({ ...style } as T);
                         }
@@ -306,34 +321,17 @@ export default function StylePopover<T extends StyleBase>({
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
 
-            <div className="flex flex-col gap-1.5">
-              <Label className="text-xs text-muted-foreground">Position</Label>
-              <Select
+            <Field label="Position">
+              <Segmented
                 value={style.position}
-                onValueChange={(v) =>
+                options={POSITIONS}
+                onChange={(v) =>
                   onChange({ ...style, position: v as "left" | "center" } as T)
                 }
-              >
-                <SelectTrigger
-                  size="sm"
-                  className="w-full"
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {POSITIONS.map((p) => (
-                    <SelectItem
-                      key={p.value}
-                      value={p.value}
-                    >
-                      {p.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              />
+            </Field>
           </>
         )}
 
@@ -341,10 +339,10 @@ export default function StylePopover<T extends StyleBase>({
           <Button
             size="sm"
             variant="outline"
-            className="w-full"
+            className="w-full rounded-full"
             onClick={() => onApplyAll(style)}
           >
-            Tout appliquer
+            Appliquer à tous les extraits
           </Button>
         )}
       </PopoverContent>

@@ -28,66 +28,71 @@ export default function BillionsClubSelection({
   onConfirm: () => void;
 }) {
   return (
-    <div className="flex flex-col min-h-0 p-4 gap-3">
+    <div className="flex min-h-0 flex-col gap-3 p-5">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Sélectionnés ({selected.length})
-        </p>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold">Sélection</span>
+          <span className="rounded-full border border-border bg-background px-2 py-0.5 text-xs font-medium tabular-nums">
+            {selected.length}
+          </span>
+        </div>
         {selected.length > 0 && (
           <button
+            type="button"
             onClick={onClear}
-            className="text-xs text-muted-foreground hover:text-foreground"
+            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             Tout effacer
           </button>
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto flex flex-col gap-1">
+      <div className="flex flex-1 flex-col gap-1.5 overflow-y-auto">
         {selected.length === 0 ? (
-          <p className="text-xs text-muted-foreground text-center mt-8">
-            Aucune sélection
-          </p>
+          <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-border">
+            <p className="text-sm text-muted-foreground">
+              Aucun titre sélectionné
+            </p>
+          </div>
         ) : (
           selected.map((t, i) => (
             <div
               key={t.id}
-              className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-xs"
+              className="flex items-center gap-3 rounded-xl border border-border bg-background px-3 py-2 text-sm"
             >
-              <span className="text-muted-foreground tabular-nums w-5 shrink-0">
-                {i + 1}.
+              <span className="w-5 shrink-0 text-xs tabular-nums text-muted-foreground">
+                {i + 1}
               </span>
-              <span className="flex-1 min-w-0">
-                <span className="block font-medium truncate">{t.name}</span>
-                <span className="block text-muted-foreground truncate">
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-medium">{t.name}</span>
+                <span className="block truncate text-xs text-muted-foreground">
                   {t.artists.map((a) => a.artist_name).join(", ")}
                 </span>
               </span>
-              <span className="text-muted-foreground shrink-0 tabular-nums">
+              <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
                 {formatStreams(t.streams_count)}
               </span>
               <button
+                type="button"
                 onClick={() => onToggle(t)}
-                className="text-muted-foreground hover:text-foreground shrink-0"
+                className="shrink-0 rounded-full p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                aria-label="Retirer"
               >
-                <XIcon className="size-3" />
+                <XIcon className="size-3.5" />
               </button>
             </div>
           ))
         )}
       </div>
 
-      <div className="flex items-center justify-between gap-2 pt-4 border-t">
+      <div className="flex items-center justify-between gap-3 border-t pt-4">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground shrink-0">Format</span>
+          <span className="shrink-0 text-xs text-muted-foreground">Format</span>
           <Select
             value={labelFormat}
             onValueChange={onLabelFormatChange}
           >
-            <SelectTrigger
-              size="sm"
-              className="w-50"
-            >
+            <SelectTrigger className="w-52">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -102,12 +107,14 @@ export default function BillionsClubSelection({
           <Button
             size="sm"
             variant="outline"
+            className="h-9 rounded-full px-4 text-sm"
             onClick={onCancel}
           >
             Annuler
           </Button>
           <Button
             size="sm"
+            className="h-9 rounded-full px-4 text-sm"
             onClick={onConfirm}
             disabled={selected.length === 0}
           >

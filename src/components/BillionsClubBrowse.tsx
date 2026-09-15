@@ -45,13 +45,13 @@ function TitleRows({
 }) {
   return (
     <>
-      <thead className="sticky top-0 bg-background border-b">
+      <thead className="sticky top-0 bg-muted/60 text-xs backdrop-blur-sm">
         <tr className="text-muted-foreground">
-          <th className="w-8 py-2" />
+          <th className="w-9 py-2.5" />
           {headers.map((h) => (
             <th
               key={h.key}
-              className={`py-2 pr-3 cursor-pointer select-none hover:text-foreground ${h.align === "right" ? "text-right" : "text-left"}`}
+              className={`py-2.5 pr-3 pl-1 font-medium cursor-pointer select-none hover:text-foreground ${h.align === "right" ? "text-right" : "text-left"}`}
               onClick={() => onSort(h.key)}
             >
               <span className="inline-flex items-center gap-1">
@@ -66,17 +66,17 @@ function TitleRows({
         {rows.map((row) => (
           <tr
             key={row.id}
-            className="border-b border-border/50 hover:bg-muted/50 cursor-pointer"
+            className="cursor-pointer border-t border-border transition-colors hover:bg-muted/50"
             onClick={() => onToggle(row._raw)}
           >
-            <td className="py-2 pl-1">
+            <td className="py-2 pl-2.5">
               <Checkbox
                 checked={selected.some((t) => t.id === row.id)}
                 onCheckedChange={() => onToggle(row._raw)}
                 onClick={(e) => e.stopPropagation()}
               />
             </td>
-            <td className="py-2 pr-3 font-medium max-w-36 truncate">{row.name}</td>
+            <td className="py-2 pr-3 pl-1 font-medium max-w-36 truncate">{row.name}</td>
             <td className="py-2 pr-3 max-w-28 truncate">
               <span className="flex flex-wrap gap-x-1">
                 {row._raw.artists.map((a, i) => (
@@ -125,10 +125,10 @@ function ArtistRows({
 }) {
   return (
     <>
-      <thead className="sticky top-0 bg-background border-b">
+      <thead className="sticky top-0 bg-muted/60 text-xs backdrop-blur-sm">
         <tr className="text-muted-foreground">
           {headers.map((h) => (
-            <th key={h.key} className={`py-2 pr-3 cursor-pointer select-none hover:text-foreground ${h.align === "right" ? "text-right" : "text-left"}`} onClick={() => onSort(h.key)}>
+            <th key={h.key} className={`py-2.5 pr-3 pl-1 font-medium cursor-pointer select-none hover:text-foreground ${h.align === "right" ? "text-right" : "text-left"}`} onClick={() => onSort(h.key)}>
               <span className="inline-flex items-center gap-1">{h.label}<SortIcon active={sortKey === h.key} dir={sortDir} /></span>
             </th>
           ))}
@@ -137,8 +137,8 @@ function ArtistRows({
       </thead>
       <tbody>
         {rows.map((a) => (
-          <tr key={a.id} className="border-b border-border/50 hover:bg-muted/50 cursor-pointer" onClick={() => onDrillDown("artist", a.id, a.artist_name)}>
-            <td className="py-2 pr-3 font-medium">{a.artist_name}</td>
+          <tr key={a.id} className="cursor-pointer border-t border-border transition-colors hover:bg-muted/50" onClick={() => onDrillDown("artist", a.id, a.artist_name)}>
+            <td className="py-2 pr-3 pl-1 font-medium">{a.artist_name}</td>
             <td className="py-2 pr-3 text-right tabular-nums text-muted-foreground">{a.total_tracks}</td>
             <td className="py-2 text-muted-foreground"><ChevronRightIcon className="size-3.5 ml-auto" /></td>
           </tr>
@@ -167,10 +167,10 @@ function AlbumRows({
 }) {
   return (
     <>
-      <thead className="sticky top-0 bg-background border-b">
+      <thead className="sticky top-0 bg-muted/60 text-xs backdrop-blur-sm">
         <tr className="text-muted-foreground">
           {headers.map((h) => (
-            <th key={h.key} className={`py-2 pr-3 cursor-pointer select-none hover:text-foreground ${h.align === "right" ? "text-right" : "text-left"}`} onClick={() => onSort(h.key)}>
+            <th key={h.key} className={`py-2.5 pr-3 pl-1 font-medium cursor-pointer select-none hover:text-foreground ${h.align === "right" ? "text-right" : "text-left"}`} onClick={() => onSort(h.key)}>
               <span className="inline-flex items-center gap-1">{h.label}<SortIcon active={sortKey === h.key} dir={sortDir} /></span>
             </th>
           ))}
@@ -179,8 +179,8 @@ function AlbumRows({
       </thead>
       <tbody>
         {rows.map((al) => (
-          <tr key={al.id} className="border-b border-border/50 hover:bg-muted/50 cursor-pointer" onClick={() => onDrillDown("album", al.id, al.title)}>
-            <td className="py-2 pr-3 font-medium max-w-36 truncate">{al.title}</td>
+          <tr key={al.id} className="cursor-pointer border-t border-border transition-colors hover:bg-muted/50" onClick={() => onDrillDown("album", al.id, al.title)}>
+            <td className="py-2 pr-3 pl-1 font-medium max-w-36 truncate">{al.title}</td>
             <td className="py-2 pr-3 max-w-28 truncate">
               <span className="flex flex-wrap gap-x-1">
                 {al.artists.map((a, i) => (
@@ -252,16 +252,16 @@ export default function BillionsClubBrowse({
   const backLabel = previousView === "titles" ? "Titres" : previousView === "artists" ? "Artistes" : "Albums";
 
   return (
-    <div className="flex flex-col min-h-0 p-4 gap-3">
-      <div className="flex gap-2 items-center">
+    <div className="flex min-h-0 flex-col gap-3 p-5">
+      <div className="flex items-center gap-2">
         {drillDown ? (
-          <Button size="sm" variant="ghost" className="shrink-0 gap-1 px-2 text-muted-foreground hover:text-foreground" onClick={onBack}>
+          <Button size="sm" variant="outline" className="h-9 shrink-0 gap-1 rounded-full px-3 text-sm" onClick={onBack}>
             <ChevronLeftIcon className="size-3.5" />
             {backLabel}
           </Button>
         ) : (
           <Select value={view} onValueChange={(v) => onViewChange(v as ViewMode)}>
-            <SelectTrigger size="sm" className="w-32 shrink-0"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-36 shrink-0"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="titles">Titres</SelectItem>
               <SelectItem value="artists">Artistes</SelectItem>
@@ -269,18 +269,18 @@ export default function BillionsClubBrowse({
             </SelectContent>
           </Select>
         )}
-        <Input placeholder="Rechercher..." value={search} onChange={(e) => onSearchChange(e.target.value)} className="h-8 text-xs" />
+        <Input placeholder="Rechercher un titre, un artiste…" value={search} onChange={(e) => onSearchChange(e.target.value)} />
       </div>
 
-      {drillDown && <p className="text-xs font-semibold text-foreground truncate">{drillDown.name}</p>}
+      {drillDown && <p className="truncate text-sm font-semibold">{drillDown.name}</p>}
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto rounded-xl border border-border">
         {loading ? (
           <div className="flex h-full items-center justify-center">
             <Loader2Icon className="size-4 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <table className="w-full text-xs">
+          <table className="w-full text-[13px]">
             {showingTitles && (
               <TitleRows rows={titleRows} selected={selected} onToggle={onToggle} onDrillDown={onDrillDown} sortKey={sortKey} sortDir={sortDir} onSort={onSort} headers={currentHeaders} />
             )}
@@ -292,7 +292,7 @@ export default function BillionsClubBrowse({
             )}
             {isEmpty && (
               <tbody>
-                <tr><td colSpan={5} className="py-8 text-center text-muted-foreground">Aucun résultat</td></tr>
+                <tr><td colSpan={5} className="py-10 text-center text-sm text-muted-foreground">Aucun résultat</td></tr>
               </tbody>
             )}
           </table>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ClapperboardIcon, InfoIcon } from "lucide-react";
-import { Button } from "./ui/button";
+import IconAction from "./IconAction";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import {
@@ -55,15 +55,13 @@ export default function VideoFields({ clipIndex }: { clipIndex: number }) {
                 )
               }
             />
-            <Button
-              size="icon-sm"
-              variant="ghost"
-              className="shrink-0 text-violet-400 hover:text-violet-400"
-              onClick={() => setOpen(true)}
+            <IconAction
+              aria-label="Choisir une vidéo"
               title="Choisir une vidéo"
+              onClick={() => setOpen(true)}
             >
-              <ClapperboardIcon className="size-3.5" />
-            </Button>
+              <ClapperboardIcon />
+            </IconAction>
 
             <Label className="justify-end text-muted-foreground">
               Début extrait
@@ -101,17 +99,17 @@ export default function VideoFields({ clipIndex }: { clipIndex: number }) {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                size="icon-sm"
-                variant="ghost"
-                className="shrink-0 text-muted-foreground hover:text-foreground"
+              <IconAction
+                aria-label="Informations"
+                className="cursor-default"
               >
-                <InfoIcon className="size-3.5" />
-              </Button>
+                <InfoIcon />
+              </IconAction>
             </TooltipTrigger>
             <TooltipContent
-              side="right"
-              className="max-w-48 text-center"
+              side="top"
+              sideOffset={6}
+              className="max-w-56 text-center"
             >
               {hiddenByTeaser
                 ? "Durée d'affichage du titre en chevauchement sur l'extrait précédent"

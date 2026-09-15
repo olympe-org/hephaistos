@@ -1,11 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import axios from "axios";
 import { toast } from "sonner";
 import { useAppDispatch } from "@/store";
 import { setAllDurations } from "@/store/createVideoSlice";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent } from "./ui/dialog";
-import SectionHeader from "./SectionHeader";
 import VideoSearchPanel from "./VideoSearchPanel";
 import VideoSelectionFields from "./VideoSelectionFields";
 import { type VideoResult } from "./VideoResultItem";
@@ -38,12 +36,7 @@ function loadYTScript() {
   document.head.appendChild(s);
 }
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const INVIDIOUS_INSTANCES = [
-  "https://yt.chocolatemoo53.com",
-  "https://inv.thepixora.com",
-];
+const INVIDIOUS_URL = import.meta.env.VITE_INVIDIOUS_URL ?? "https://inv.nadeko.net";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -219,27 +212,19 @@ export default function VideoPickerDialog({
     setLoading(true);
     setError("");
 
-    for (const instance of INVIDIOUS_INSTANCES) {
-      try {
-        const { data } = await axios.get(`${instance}/api/v1/search`, {
-          params: { q: query, type: "video", region: "US" },
-          timeout: 5000,
-        });
-        setResults(
-          (data as VideoResult[])
-            .filter((r) => r.type === "video")
-            .slice(0, 10),
-        );
-        setLoading(false);
-        return;
-      } catch {
-        continue;
-      }
+    try {
+      const res = await fetch(
+        `${INVIDIOUS_URL}/api/v1/search?q=${encodeURIComponent(query)}&type=video&region=US`,
+      );
+      if (!res.ok) throw new Error(`${res.status}`);
+      const data: VideoResult[] = await res.json();
+      setResults(data.filter((r) => r.type === "video").slice(0, 10));
+    } catch {
+      setError("Recherche indisponible. Réessaie plus tard.");
+      setResults([]);
+    } finally {
+      setLoading(false);
     }
-
-    setError("Instances indisponibles. Réessaie plus tard.");
-    setResults([]);
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -266,12 +251,15 @@ export default function VideoPickerDialog({
       open={open}
       onOpenChange={onOpenChange}
     >
-      <DialogContent className="sm:max-w-[72dvw] p-0 gap-0 overflow-hidden">
-        <div className="flex items-center px-6 py-4 border-b shrink-0">
-          <SectionHeader
-            eyebrow="Vidéo"
-            title="Choisir une vidéo"
-          />
+      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[72dvw]">
+        <div className="flex shrink-0 flex-col gap-1 border-b px-6 py-5 pr-16">
+          <h2 className="text-lg font-semibold tracking-tight">
+            Choisir une vidéo
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Cherche sur YouTube ou colle une URL, puis règle le début et la
+            durée de l'extrait.
+          </p>
         </div>
 
         <div className="grid grid-cols-[2fr_3fr] h-[80vh] min-h-0 overflow-hidden">
@@ -286,18 +274,18 @@ export default function VideoPickerDialog({
             onSelect={handleSelect}
           />
 
-          <div className="flex flex-col min-h-0 p-4 gap-3">
-            <div className="flex-1 overflow-y-auto flex flex-col gap-4">
+          <div className="flex min-h-0 flex-col gap-3 p-5">
+            <div className="flex flex-1 flex-col gap-5 overflow-y-auto">
               {activeVideoId ? (
-                <div className="aspect-video w-full rounded-lg overflow-hidden bg-black shrink-0">
+                <div className="aspect-video w-full shrink-0 overflow-hidden rounded-2xl bg-black">
                   <div
                     ref={handleContainer}
                     className="w-full h-full"
                   />
                 </div>
               ) : (
-                <div className="aspect-video w-full rounded-lg border border-dashed border-border flex items-center justify-center shrink-0">
-                  <p className="text-xs text-muted-foreground">
+                <div className="flex aspect-video w-full shrink-0 items-center justify-center rounded-2xl border border-dashed border-border bg-muted/30">
+                  <p className="text-sm text-muted-foreground">
                     Sélectionne une vidéo ou colle une URL
                   </p>
                 </div>
@@ -325,10 +313,11 @@ export default function VideoPickerDialog({
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-4 border-t">
+            <div className="flex items-center justify-end gap-2 border-t pt-4">
               <Button
                 size="sm"
                 variant="outline"
+                className="h-9 rounded-full px-4 text-sm"
                 tabIndex={-1}
                 onClick={() => onOpenChange(false)}
               >
@@ -336,6 +325,7 @@ export default function VideoPickerDialog({
               </Button>
               <Button
                 size="sm"
+                className="h-9 rounded-full px-4 text-sm"
                 onClick={handleConfirm}
                 disabled={!url}
               >

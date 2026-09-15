@@ -11,7 +11,7 @@ export type RenderStatus =
   | "failed"
   | "cancelled";
 
-export type ClipRenderStatus = "pending" | "downloading" | "done";
+type ClipRenderStatus = "pending" | "downloading" | "done";
 
 export interface ClipRenderData {
   id: string;
@@ -52,11 +52,8 @@ const renderSlice = createSlice({
         state.job = { ...state.job, ...action.payload };
       }
     },
-    clearJob(state) {
-      state.job = null;
-    },
   },
 });
 
-export const { setJob, updateJob, clearJob } = renderSlice.actions;
+export const { setJob, updateJob } = renderSlice.actions;
 export default renderSlice.reducer;

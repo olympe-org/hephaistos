@@ -14,14 +14,14 @@ export const templates: Props[] = [
     tags: ["Classement", "Multi-clips"],
     imgReference: "",
     features: [
-      "background", // tabs ? toggle ?
-      "smoothTransition", // toggle -> affichage int input
-      "watermark", // toggle -> affichage couleur, opacité, size et text
+      "background", // tabs? toggle?
+      "smoothTransition", // toggle -> show int input
+      "watermark", // toggle -> show color, opacity, size and text
       "globalTitle",
-      "videoMargin", // toggle et si oui alors int input
+      "videoMargin", // toggle, and if on, an int input
       "id",
-      "highlightActive", // toggle et si oui flex-between et couleur picker avec default value
-      "teaserTop", // proposé toggle au niveau du titre + int input avec default value pour demander combien de temps d'affichage
+      "highlightActive", // toggle, and if on, flex-between + color picker with a default value
+      "teaserTop", // suggest a toggle near the title + int input with a default value asking how long to display it
     ],
   },
   {

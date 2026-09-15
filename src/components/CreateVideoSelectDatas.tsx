@@ -1,4 +1,3 @@
-import { Button } from "./ui/button";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { addClip, removeClip } from "@/store/createVideoSlice";
 import TextStyleFields from "./TextStyleFields";
@@ -7,7 +6,9 @@ import GlobalTitleFields from "./GlobalTitleFields";
 import CheckboxSaveData from "./CheckboxSaveData";
 import RenderSettings from "./RenderSettings";
 import ClipsSummary from "./ClipsSummary";
-import SectionHeader from "./SectionHeader";
+import SectionTitle from "./SectionTitle";
+import IconAction from "./IconAction";
+import { PANEL } from "@/lib/tokens";
 import { PlusIcon, Trash2Icon } from "lucide-react";
 
 export default function CreateVideoSelectDatas() {
@@ -16,77 +17,79 @@ export default function CreateVideoSelectDatas() {
   const features = useAppSelector((s) => s.createVideo.templateFeatures);
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-10">
       {/* Titre global */}
       {features.includes("globalTitle") && (
-        <div className="flex flex-col gap-4">
-          <SectionHeader
-            eyebrow="Global"
+        <section className="flex flex-col gap-4">
+          <SectionTitle
             title="Titre global"
+            description="Affiché en haut de la vidéo pendant toute sa durée."
           />
-          <GlobalTitleFields />
-          <div className="h-px bg-border" />
-        </div>
+          <div className={PANEL}>
+            <GlobalTitleFields />
+          </div>
+        </section>
       )}
 
       {/* Extraits */}
-      {clips.map((_, index) => (
-        <div
-          key={index}
-          className="flex flex-col gap-4"
-        >
-          <div className="flex items-center justify-between">
-            <SectionHeader
-              eyebrow={`Extrait ${index + 1}`}
-              title="Texte & vidéo"
-            />
-            {clips.length > 1 && (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-muted-foreground hover:text-destructive"
-                onClick={() => dispatch(removeClip(index))}
-              >
-                <Trash2Icon className="size-3.5" />
-                Supprimer
-              </Button>
-            )}
-          </div>
-          <TextStyleFields clipIndex={index} />
-          <VideoFields clipIndex={index} />
+      <section className="flex flex-col gap-4">
+        <SectionTitle
+          title="Extraits"
+          description="Un extrait, c'est un clip vidéo et son texte."
+          action={
+            <span className="rounded-full border border-border bg-background px-2.5 py-1 text-xs font-medium tabular-nums">
+              {clips.length} extrait{clips.length > 1 ? "s" : ""}
+            </span>
+          }
+        />
+        <div className="flex flex-col gap-4">
+          {clips.map((_, index) => (
+            <div
+              key={index}
+              className={`flex flex-col gap-5 ${PANEL}`}
+            >
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-sm font-semibold">
+                  Extrait {index + 1}
+                </span>
+                {clips.length > 1 && (
+                  <IconAction
+                    danger
+                    aria-label="Supprimer l'extrait"
+                    title="Supprimer l'extrait"
+                    onClick={() => dispatch(removeClip(index))}
+                  >
+                    <Trash2Icon />
+                  </IconAction>
+                )}
+              </div>
+              <TextStyleFields clipIndex={index} />
+              <div className="h-px bg-border" />
+              <VideoFields clipIndex={index} />
+            </div>
+          ))}
 
-          {index < clips.length - 1 && <div className="mt-3 h-px bg-border" />}
+          <button
+            type="button"
+            onClick={() => dispatch(addClip())}
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-border text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted/40 hover:text-foreground"
+          >
+            <PlusIcon className="size-4" />
+            Ajouter un extrait
+          </button>
         </div>
-      ))}
+      </section>
 
-      <button
-        onClick={() => dispatch(addClip())}
-        className="group flex items-center gap-3 w-full py-1 text-muted-foreground hover:text-violet-400 transition-colors"
-      >
-        <span className="h-px flex-1 border-t border-dashed border-current opacity-30 group-hover:opacity-60 transition-opacity" />
-        <span className="flex items-center gap-1.5 text-[10px] font-bold tracking-[0.18em] uppercase shrink-0">
-          <PlusIcon className="size-3" />
-          Ajouter un extrait
-        </span>
-        <span className="h-px flex-1 border-t border-dashed border-current opacity-30 group-hover:opacity-60 transition-opacity" />
-      </button>
-
-      <div className="h-px bg-border" />
-
-      {/* Paramètres rendu */}
-      <div className="flex flex-col gap-4">
-        <SectionHeader
-          eyebrow="Rendu"
-          title="Paramètres"
+      {/* Render settings */}
+      <section className="flex flex-col gap-4">
+        <SectionTitle
+          title="Paramètres de rendu"
+          description="Fond, marges, transitions et filigrane du montage final."
         />
         <RenderSettings />
-      </div>
-
-      <div className="h-px bg-border" />
+      </section>
 
       <ClipsSummary />
-
-      <div className="h-px bg-border" />
 
       <CheckboxSaveData target="step2" />
     </div>

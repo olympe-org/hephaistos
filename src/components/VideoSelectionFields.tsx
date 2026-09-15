@@ -1,4 +1,5 @@
-import { Button } from "./ui/button";
+import { InfoIcon } from "lucide-react";
+import IconAction from "./IconAction";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import {
@@ -30,7 +31,7 @@ export default function VideoSelectionFields({
   onApplyAllDurations: () => void;
 }) {
   return (
-    <div className="grid grid-cols-[7rem_2fr_0.5fr] items-center gap-x-3 gap-y-3">
+    <div className="grid grid-cols-[7rem_1fr_auto] items-center gap-x-3 gap-y-3">
       <Label className="justify-end text-muted-foreground">URL vidéo</Label>
       <Input
         tabIndex={-1}
@@ -51,32 +52,46 @@ export default function VideoSelectionFields({
           <Tooltip>
             <TooltipTrigger asChild>
               <button
+                type="button"
                 tabIndex={-1}
                 onClick={onToggleSync}
-                className={`shrink-0 flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold tracking-wide transition-colors border ${
+                aria-pressed={syncTimecode}
+                className={`inline-flex h-8 shrink-0 items-center rounded-full border px-3 text-xs font-medium transition-colors ${
                   syncTimecode
-                    ? "border-violet-400/40 bg-violet-400/10 text-violet-400"
-                    : "border-border text-muted-foreground"
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
                 }`}
               >
-                AUTO
+                Auto
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right">
+            <TooltipContent
+              side="top"
+              sideOffset={6}
+            >
               {syncTimecode
-                ? "Timecode synchronisé — cliquer pour désactiver"
-                : "Timecode manuel — cliquer pour activer la sync"}
+                ? "Timecode synchronisé avec le lecteur — cliquer pour désactiver"
+                : "Timecode manuel — cliquer pour synchroniser avec le lecteur"}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button size="icon-sm" variant="ghost" tabIndex={-1} className="shrink-0 text-muted-foreground">
-                <span className="text-xs font-medium">i</span>
-              </Button>
+              <IconAction
+                tabIndex={-1}
+                aria-label="Format du timecode"
+                className="cursor-default"
+              >
+                <InfoIcon />
+              </IconAction>
             </TooltipTrigger>
-            <TooltipContent side="right">heures:minutes:secondes</TooltipContent>
+            <TooltipContent
+              side="top"
+              sideOffset={6}
+            >
+              heures:minutes:secondes
+            </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>
@@ -93,14 +108,18 @@ export default function VideoSelectionFields({
         <Tooltip>
           <TooltipTrigger asChild>
             <button
+              type="button"
               tabIndex={-1}
               onClick={onApplyAllDurations}
-              className="w-full flex items-center justify-center rounded px-1.5 py-0.5 text-[10px] font-semibold tracking-wide transition-colors border border-border text-muted-foreground hover:border-violet-400/40 hover:text-violet-400 hover:bg-violet-400/5"
+              className="inline-flex h-8 w-full items-center justify-center rounded-full border border-border px-3 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted/60 hover:text-foreground"
             >
-              TOUS
+              Tous
             </button>
           </TooltipTrigger>
-          <TooltipContent side="right">
+          <TooltipContent
+            side="top"
+            sideOffset={6}
+          >
             Appliquer cette durée à tous les extraits (y compris les futurs)
           </TooltipContent>
         </Tooltip>

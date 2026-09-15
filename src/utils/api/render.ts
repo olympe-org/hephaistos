@@ -30,17 +30,6 @@ export function buildRenderBody(state: CreateVideoState): object {
   };
 }
 
-// ─── GET /jobs/last ───────────────────────────────────────────────────────────
-
-export async function getLastJob(): Promise<RenderJob> {
-  const res = await fetchAuth(`${BASE_URL}/jobs/last`);
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw Object.assign(new Error("No last job"), { status: res.status, detail: err });
-  }
-  return res.json();
-}
-
 // ─── POST /jobs/render ────────────────────────────────────────────────────────
 
 export async function startRender(body: object): Promise<RenderJob> {
@@ -62,7 +51,7 @@ export async function startRender(body: object): Promise<RenderJob> {
 }
 
 // ─── GET /jobs/{job_id}/stream ───────────────────────────────────────────────
-// fetch + ReadableStream pour pouvoir envoyer le header Authorization
+// fetch + ReadableStream so we can send the Authorization header
 
 export function subscribeToJob(jobId: string, dispatch: AppDispatch): () => void {
   const controller = new AbortController();
@@ -103,7 +92,7 @@ export function subscribeToJob(jobId: string, dispatch: AppDispatch): () => void
               return;
             }
           } catch {
-            // ligne SSE non-JSON (ex: commentaire keep-alive)
+            // non-JSON SSE line (e.g. keep-alive comment)
           }
         }
       }

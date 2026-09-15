@@ -13,4 +13,3 @@ export const fetchArtists = ()        => get<ApiArtist[]>("/artists");
 export const fetchAlbums  = ()        => get<ApiAlbum[]>("/albums");
 export const fetchArtist  = (id: number) => get<DrilledResponse>(`/artists/${id}`);
 export const fetchAlbum   = (id: number) => get<DrilledResponse>(`/albums/${id}`);
-export const fetchMetaTracks = ()     => get<unknown>("/meta/tracks");

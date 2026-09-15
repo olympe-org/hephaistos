@@ -1,5 +1,5 @@
 import { SearchIcon, XIcon } from "lucide-react";
-import { Button } from "./ui/button";
+import IconAction from "./IconAction";
 import { Input } from "./ui/input";
 import VideoResultItem, { type VideoResult } from "./VideoResultItem";
 
@@ -23,40 +23,50 @@ export default function VideoSearchPanel({
   onSelect: (video: VideoResult) => void;
 }) {
   return (
-    <div className="flex min-h-0 flex-col gap-3 border-r p-4">
+    <div className="flex min-h-0 flex-col gap-3 border-r p-5">
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Input
-            placeholder="Rechercher..."
+            placeholder="Rechercher sur YouTube…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && onSearch()}
-            className="pr-7"
+            className="pr-9"
           />
           {query && (
             <button
+              type="button"
               onClick={() => setQuery("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               tabIndex={-1}
+              aria-label="Effacer"
             >
               <XIcon className="size-3.5" />
             </button>
           )}
         </div>
-        <Button
-          size="icon"
-          variant="outline"
+        <IconAction
+          className="size-9"
+          aria-label="Rechercher"
+          title="Rechercher"
           onClick={onSearch}
           disabled={loading}
           tabIndex={-1}
         >
-          <SearchIcon className="size-4" />
-        </Button>
+          <SearchIcon />
+        </IconAction>
       </div>
 
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      {error && (
+        <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+          {error}
+        </p>
+      )}
 
-      <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto" tabIndex={-1}>
+      <div
+        className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto"
+        tabIndex={-1}
+      >
         {results.map((video) => (
           <VideoResultItem
             key={video.videoId}
@@ -66,7 +76,9 @@ export default function VideoSearchPanel({
           />
         ))}
         {results.length === 0 && !loading && (
-          <p className="text-xs text-muted-foreground text-center py-8">Aucun résultat</p>
+          <p className="py-10 text-center text-sm text-muted-foreground">
+            Aucun résultat
+          </p>
         )}
       </div>
     </div>
