@@ -7,13 +7,13 @@ const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8001";
 async function saveVideo(blob: Blob) {
   const file = new File([blob], "video.mp4", { type: "video/mp4" });
 
-  // iOS Safari + Android Chrome moderne : share sheet natif → "Enregistrer dans Photos"
+  // iOS Safari + modern Android Chrome: native share sheet → "Save to Photos"
   if (navigator.canShare?.({ files: [file] })) {
     await navigator.share({ files: [file], title: "Vidéo" });
     return;
   }
 
-  // Fallback : lien de téléchargement classique (Android Chrome, desktop)
+  // Fallback: classic download link (Android Chrome, desktop)
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -85,7 +85,7 @@ export default function RenderView() {
     try {
       await saveVideo(blob);
     } catch {
-      // L'utilisateur a annulé le share sheet — pas une erreur
+      // User cancelled the share sheet — not an error
     } finally {
       setSaving(false);
     }
