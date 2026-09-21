@@ -100,12 +100,12 @@ export default function DesktopPlayer({
             </Button>
           </div>
         ) : (
-          <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-16">
+          <div className="flex w-full items-center justify-center gap-16">
             {/* Kept invisible (not unmounted) until the video actually loads —
                 a passing link check doesn't guarantee it, and the layout
                 stays stable once it's revealed */}
             <div
-              className={`flex w-full min-w-0 max-w-xs flex-col items-start justify-self-end gap-4 text-left ${loading ? "invisible" : ""}`}
+              className={`flex w-full min-w-0 max-w-xs flex-col items-start gap-4 text-left ${loading ? "invisible" : ""}`}
             >
               <div className="flex min-w-0 flex-col gap-1.5">
                 <h1 className="w-full flex-wrap text-balance wrap-break-word text-2xl font-semibold tracking-tight">
@@ -116,11 +116,11 @@ export default function DesktopPlayer({
                 )}
               </div>
 
-              <div className="flex items-center gap-4">
-                <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-2.5 shadow-sm">
+              <div className="flex flex-col items-start gap-2">
+                <div className="flex size-28 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-3 shadow-sm">
                   <QRCodeSVG
                     value={window.location.href}
-                    size={72}
+                    size={96}
                   />
                 </div>
                 <p className="text-xs leading-relaxed text-muted-foreground">
@@ -196,10 +196,6 @@ export default function DesktopPlayer({
                 </div>
               )}
             </div>
-
-            {/* Symmetric spacer so the video (an auto-width column) lands at
-                the true horizontal center, not just centered against the info panel */}
-            <div aria-hidden />
           </div>
         )}
       </main>
