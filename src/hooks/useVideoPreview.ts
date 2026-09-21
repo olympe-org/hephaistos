@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getShareLink } from "@/utils/api/render";
+import { directVideoUrl, getShareLink } from "@/utils/api/render";
 
 interface LoadedVideo {
   jobId: string;
@@ -22,7 +22,7 @@ export function useVideoPreview(jobId: string | null) {
     let cancelled = false;
     getShareLink(jobId)
       .then(({ url }) => {
-        if (!cancelled) setLoaded({ jobId, url });
+        if (!cancelled) setLoaded({ jobId, url: directVideoUrl(jobId, url) });
       })
       .catch(() => {
         if (cancelled) return;

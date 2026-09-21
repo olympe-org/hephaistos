@@ -206,8 +206,9 @@ export async function downloadVideo(jobId: string, title?: string): Promise<void
 // ─── GET /jobs/{job_id}/share-link ────────────────────────────────────────────
 
 export interface ShareLink {
-  // Direct, streamable URL (short-lived token, ~48h) — use as a <video src>
-  // or QR code target instead of downloading the whole file into a Blob.
+  // A vexia.studio page (short-lived token, ~48h) meant to be opened by a
+  // person — QR code, e-mail, copy-link button. Not a playable video URL:
+  // for a <video src>, use directVideoUrl() instead.
   url: string;
   expires_at: string;
 }
@@ -216,6 +217,13 @@ export async function getShareLink(jobId: string): Promise<ShareLink> {
   const res = await fetchAuth(`${BASE_URL}/jobs/${jobId}/share-link`);
   if (!res.ok) throw new Error("Failed to get share link");
   return res.json();
+}
+
+// Builds the direct, playable video URL for in-app previews (<video src>),
+// by lifting the token out of a share link's vexia.studio page URL.
+export function directVideoUrl(jobId: string, shareUrl: string): string {
+  const token = new URL(shareUrl).searchParams.get("token") ?? "";
+  return `${BASE_URL}/jobs/${jobId}/download?token=${token}`;
 }
 
 // ─── Public metrics ───────────────────────────────────────────────────────────

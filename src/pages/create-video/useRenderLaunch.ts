@@ -5,6 +5,7 @@ import { setJob, updateJob, type RenderJob } from "@/store/renderSlice";
 import {
   buildRenderBody,
   cancelRender,
+  directVideoUrl,
   getShareLink,
   startRender,
   subscribeToJob,
@@ -30,7 +31,7 @@ export function useRenderLaunch(createVideoState: CreateVideoState, job: RenderJ
   useEffect(() => {
     if (job?.status === "done" && job.job_id) {
       getShareLink(job.job_id)
-        .then(({ url }) => setVideoUrl(url))
+        .then(({ url }) => setVideoUrl(directVideoUrl(job.job_id, url)))
         .catch((err) => console.error("Failed to load video preview:", err));
     }
   }, [job?.status, job?.job_id]);

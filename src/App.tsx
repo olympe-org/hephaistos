@@ -115,6 +115,17 @@ export default function App() {
               </Suspense>
             }
           />
+          {/* Share links now point here (branded vexia.studio URL) rather
+              than straight at the API — RenderView builds the real API
+              video URL itself from :jobId + ?token, same component either way. */}
+          <Route
+            path="/jobs/:jobId/download"
+            element={
+              <Suspense fallback={<RenderViewFallback />}>
+                <RenderView />
+              </Suspense>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </React.StrictMode>
