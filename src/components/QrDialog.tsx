@@ -28,6 +28,11 @@ export default function QrDialog({
   useEffect(() => {
     if (!open || !jobId) return;
     let cancelled = false;
+    // Clear the previous link first (deferred, see react-hooks/set-state-in-effect)
+    // so a reopen always shows the loader instead of flashing the last job's QR code.
+    const resetTimer = setTimeout(() => {
+      if (!cancelled) setUrl(null);
+    }, 0);
     getShareLink(jobId)
       .then((link) => {
         if (!cancelled) setUrl(link.url);
@@ -37,6 +42,7 @@ export default function QrDialog({
       });
     return () => {
       cancelled = true;
+      clearTimeout(resetTimer);
     };
   }, [open, jobId]);
 

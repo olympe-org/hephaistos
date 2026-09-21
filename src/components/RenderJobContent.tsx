@@ -22,9 +22,13 @@ export default function RenderJobContent({ showMeta }: { showMeta?: boolean }) {
 
   useEffect(() => {
     if (job?.status === "done" && job.job_id) {
+      // Clear the previous link first (deferred, see react-hooks/set-state-in-effect)
+      // so a new render never shows the last one's QR code while its own link loads.
+      const resetTimer = setTimeout(() => setShareUrl(null), 0);
       getShareLink(job.job_id)
         .then(({ url }) => setShareUrl(url))
         .catch(() => setShareUrl(null));
+      return () => clearTimeout(resetTimer);
     }
   }, [job?.status, job?.job_id]);
 
@@ -91,9 +95,9 @@ export default function RenderJobContent({ showMeta }: { showMeta?: boolean }) {
             type="button"
             onClick={handleCopy}
             disabled={!shareUrl}
-            className="group flex items-center justify-between gap-3 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm transition-colors hover:bg-muted/60 disabled:pointer-events-none disabled:opacity-60"
+            className="group flex min-w-0 items-center justify-between gap-3 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm transition-colors hover:bg-muted/60 disabled:pointer-events-none disabled:opacity-60"
           >
-            <span className="truncate font-mono text-xs text-muted-foreground">
+            <span className="min-w-0 truncate font-mono text-xs text-muted-foreground">
               {shareUrl ?? "Génération du lien…"}
             </span>
             <span className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
@@ -124,12 +128,14 @@ export default function RenderJobContent({ showMeta }: { showMeta?: boolean }) {
             </DialogTitle>
             <DialogDescription className="truncate">{job.title}</DialogDescription>
           </DialogHeader>
-          <div className="m-auto flex w-fit items-center justify-center overflow-hidden rounded-xl bg-white p-4">
-            {shareUrl && (
+          <div className="m-auto flex size-58 items-center justify-center overflow-hidden rounded-xl bg-white p-4">
+            {shareUrl ? (
               <QRCodeSVG
                 value={shareUrl}
                 size={200}
               />
+            ) : (
+              <LoaderIcon className="size-5 animate-spin text-muted-foreground/60" />
             )}
           </div>
         </DialogContent>
