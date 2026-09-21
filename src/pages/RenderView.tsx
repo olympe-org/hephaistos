@@ -23,15 +23,19 @@ export default function RenderView() {
   // it progressively itself, no need to wait for (or hold in memory) the
   // whole file just to display it.
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  // The initial fetch only catches a broken token/link — it doesn't guarantee
+  // the video itself will actually play, so the polished UI stays hidden
+  // behind the loader until the <video> element confirms it loaded a frame.
+  const [videoReady, setVideoReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [meta, setMeta] = useState<VideoMeta>({ title: null, sizeBytes: null, durationSeconds: null });
+
+  const loading = !error && !videoReady;
 
   useEffect(() => {
     if (!downloadUrl) {
       setError("Lien invalide.");
-      setLoading(false);
       return;
     }
 
@@ -59,8 +63,6 @@ export default function RenderView() {
         if ((err as { name?: string }).name !== "AbortError") {
           setError(err instanceof Error ? err.message : "Impossible de charger la vidéo.");
         }
-      } finally {
-        setLoading(false);
       }
     })();
 
@@ -92,6 +94,7 @@ export default function RenderView() {
   };
 
   const handleVideoError = () => setError("Impossible de lire la vidéo.");
+  const handleVideoReady = () => setVideoReady(true);
 
   if (isDesktop) {
     return (
@@ -103,6 +106,7 @@ export default function RenderView() {
         saving={saving}
         onSave={handleSave}
         onVideoLoadedMetadata={(durationSeconds) => setMeta((m) => ({ ...m, durationSeconds }))}
+        onVideoReady={handleVideoReady}
         onVideoError={handleVideoError}
       />
     );
@@ -115,6 +119,7 @@ export default function RenderView() {
       videoUrl={videoUrl}
       saving={saving}
       onSave={handleSave}
+      onVideoReady={handleVideoReady}
       onVideoError={handleVideoError}
     />
   );

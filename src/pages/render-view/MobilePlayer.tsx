@@ -10,6 +10,7 @@ export default function MobilePlayer({
   videoUrl,
   saving,
   onSave,
+  onVideoReady,
   onVideoError,
 }: {
   loading: boolean;
@@ -17,16 +18,9 @@ export default function MobilePlayer({
   videoUrl: string | null;
   saving: boolean;
   onSave: () => void;
+  onVideoReady: () => void;
   onVideoError: () => void;
 }) {
-  if (loading) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
-      </div>
-    );
-  }
-
   if (error) {
     // Same shape as the 404 page (badge, accent heading, pill button), but in
     // literal white-on-black — this route stands alone (no Navbar, no theme
@@ -39,10 +33,13 @@ export default function MobilePlayer({
         </span>
 
         <h1 className="text-[clamp(1.75rem,7vw,2.75rem)] font-semibold leading-[1.15] tracking-[-0.03em] text-balance text-white">
-          Cette vidéo{" "}
-          <span className="text-violet-400">n'est plus disponible</span>.
+          Ce lien{" "}
+          <span className="text-violet-400">n'est plus valide</span>.
         </h1>
-        <p className="max-w-xs text-sm leading-relaxed text-white/50">{error}</p>
+        <p className="max-w-xs text-sm leading-relaxed text-white/50">
+          Il a peut-être expiré, ou la vidéo a été supprimée. Découvre Vexia
+          pour créer la tienne.
+        </p>
 
         <Link
           to="/"
@@ -57,6 +54,9 @@ export default function MobilePlayer({
 
   return (
     <div className="fixed inset-0 bg-black flex items-center justify-center">
+      {/* Mounted as soon as the link's checked so it can actually start
+          loading, but kept invisible until it confirms it can play — a
+          passing link check doesn't guarantee the video itself will load. */}
       {videoUrl && (
         <video
           src={videoUrl}
@@ -64,19 +64,28 @@ export default function MobilePlayer({
           loop
           playsInline
           controls
+          onLoadedData={onVideoReady}
           onError={onVideoError}
-          className="h-full w-full object-contain"
+          className={`h-full w-full object-contain ${loading ? "invisible" : ""}`}
         />
       )}
 
-      <button
-        onClick={onSave}
-        disabled={saving}
-        className="absolute right-4 bottom-[calc(2rem+env(safe-area-inset-bottom))] flex h-11 items-center gap-2 rounded-full bg-white/90 px-5 text-sm font-semibold text-black shadow-lg active:scale-95 disabled:opacity-50"
-      >
-        <DownloadIcon className="size-4" />
-        {saving ? "..." : "Enregistrer"}
-      </button>
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
+        </div>
+      )}
+
+      {!loading && (
+        <button
+          onClick={onSave}
+          disabled={saving}
+          className="absolute right-4 bottom-[calc(2rem+env(safe-area-inset-bottom))] flex h-11 items-center gap-2 rounded-full bg-white/90 px-5 text-sm font-semibold text-black shadow-lg active:scale-95 disabled:opacity-50"
+        >
+          <DownloadIcon className="size-4" />
+          {saving ? "..." : "Enregistrer"}
+        </button>
+      )}
     </div>
   );
 }

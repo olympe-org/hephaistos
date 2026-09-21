@@ -33,7 +33,7 @@ function RenderViewFallback() {
   const isDesktop = window.matchMedia("(min-width: 768px)").matches;
   if (isDesktop) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex h-screen items-center justify-center bg-background">
         <LoaderIcon className="size-6 animate-spin text-muted-foreground" />
       </div>
     );
