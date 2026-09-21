@@ -117,13 +117,13 @@ export default function DesktopPlayer({
               </div>
 
               <div className="flex flex-col items-start gap-2">
-                <div className="flex size-28 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-3 shadow-sm">
+                <div className="flex size-32 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-3 shadow-sm">
                   <QRCodeSVG
                     value={window.location.href}
-                    size={96}
+                    size={110}
                   />
                 </div>
-                <p className="text-xs leading-relaxed text-muted-foreground">
+                <p className="text-xs leading-relaxed text-muted-foreground italic">
                   Scanne pour ouvrir la vidéo sur ton téléphone.
                 </p>
               </div>
@@ -169,7 +169,7 @@ export default function DesktopPlayer({
 
             <div
               className={`relative shrink-0 overflow-hidden ${loading ? "" : "rounded-[24px] border border-border bg-muted/30 shadow-xl"}`}
-              style={{ aspectRatio: "9/16", height: "min(78%, 620px)" }}
+              style={{ aspectRatio: "9/16", height: "min(70vh, 620px)" }}
             >
               {/* Mounted as soon as the link check passes so it can actually
                   start loading — it must stay in the DOM while `loading` is
