@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from "@/store";
-import { addClip, removeClip } from "@/store/createVideoSlice";
+import { addClip, removeClip, setJobName } from "@/store/createVideoSlice";
 import TextStyleFields from "./TextStyleFields";
 import VideoFields from "./VideoFields";
 import GlobalTitleFields from "./GlobalTitleFields";
@@ -8,6 +8,8 @@ import RenderSettings from "./RenderSettings";
 import ClipsSummary from "./ClipsSummary";
 import SectionTitle from "./SectionTitle";
 import IconAction from "./IconAction";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 import { PANEL } from "@/lib/tokens";
 import { PlusIcon, Trash2Icon } from "lucide-react";
 
@@ -15,10 +17,31 @@ export default function CreateVideoSelectDatas() {
   const dispatch = useAppDispatch();
   const clips = useAppSelector((s) => s.createVideo.clips);
   const features = useAppSelector((s) => s.createVideo.templateFeatures);
+  const jobName = useAppSelector((s) => s.createVideo.jobName);
 
   return (
     <div className="flex flex-col gap-10">
-      {/* Titre global */}
+      <section className="flex flex-col gap-4">
+        <SectionTitle
+          title="Nom du rendu"
+          description="Pour t'y retrouver dans tes rendus — n'apparaît pas dans la vidéo."
+        />
+        <div className={`flex flex-col gap-1.5 ${PANEL}`}>
+          <Label
+            htmlFor="job-name"
+            className="text-xs text-muted-foreground"
+          >
+            Nom (optionnel)
+          </Label>
+          <Input
+            id="job-name"
+            placeholder="Généré automatiquement si laissé vide"
+            value={jobName}
+            onChange={(e) => dispatch(setJobName(e.target.value))}
+          />
+        </div>
+      </section>
+
       {features.includes("globalTitle") && (
         <section className="flex flex-col gap-4">
           <SectionTitle
@@ -31,7 +54,6 @@ export default function CreateVideoSelectDatas() {
         </section>
       )}
 
-      {/* Extraits */}
       <section className="flex flex-col gap-4">
         <SectionTitle
           title="Extraits"
@@ -80,7 +102,6 @@ export default function CreateVideoSelectDatas() {
         </div>
       </section>
 
-      {/* Render settings */}
       <section className="flex flex-col gap-4">
         <SectionTitle
           title="Paramètres de rendu"

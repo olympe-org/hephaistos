@@ -145,7 +145,7 @@ export default function UserJobs({
                     aria-label="Télécharger"
                     title="Télécharger"
                     onClick={() =>
-                      downloadVideo(job.id).catch(() =>
+                      downloadVideo(job.id, job.title).catch(() =>
                         toast.error("Erreur de téléchargement."),
                       )
                     }

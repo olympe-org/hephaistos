@@ -56,7 +56,7 @@ export default function RenderJobContent({ showMeta }: { showMeta?: boolean }) {
 
       {job.status === "done" && job.job_id && (
         <div className="flex flex-col gap-4 rounded-2xl border border-border bg-muted/30 p-5">
-          {/* QR : le lien s'ouvre en grand au clic */}
+          {/* Click to open the QR code full-size */}
           <div className="flex items-center gap-5">
             <button
               type="button"
@@ -86,7 +86,7 @@ export default function RenderJobContent({ showMeta }: { showMeta?: boolean }) {
             </div>
           </div>
 
-          {/* Lien de partage : même geste "copier" que l'e-mail de contact sur la page de connexion */}
+          {/* Same "copy" interaction as the contact e-mail on the login page */}
           <button
             type="button"
             onClick={handleCopy}

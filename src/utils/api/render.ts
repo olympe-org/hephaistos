@@ -17,6 +17,9 @@ export function buildRenderBody(state: CreateVideoState): object {
     background: state.background,
     teaserTop: state.teaserTop,
     title: state.globalTitle,
+    // Distinct from `title` (shown in the video); omitted when empty, the
+    // backend generates its own name.
+    ...(state.jobName.trim() && { job_name: state.jobName.trim() }),
     ...(f.includes("videoMargin") && { videoMargin: state.videoMargin }),
     ...(f.includes("spacing") && { spacing: state.spacing }),
     ...(f.includes("smoothTransition") && {
@@ -182,12 +185,18 @@ async function fetchVideoBlob(jobId: string): Promise<Blob> {
   return new Blob(chunks, { type: "video/mp4" });
 }
 
-export async function downloadVideo(jobId: string): Promise<void> {
+// Strip characters invalid in filenames on Windows/macOS
+function sanitizeFilename(name: string): string {
+  return name.trim().replace(/[\\/:*?"<>|]+/g, "-").slice(0, 100);
+}
+
+export async function downloadVideo(jobId: string, title?: string): Promise<void> {
   const blob = await fetchVideoBlob(jobId);
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${jobId}.mp4`;
+  const name = title && sanitizeFilename(title);
+  a.download = `${name || jobId}.mp4`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

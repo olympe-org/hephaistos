@@ -121,7 +121,7 @@ export default function CreateVideo() {
       <Button
         className="h-10 rounded-full px-5"
         onClick={() =>
-          downloadVideo(job.job_id).catch((err) =>
+          downloadVideo(job.job_id, job.title).catch((err) =>
             console.error("Download failed:", err),
           )
         }

@@ -89,6 +89,9 @@ export interface CreateVideoState {
   saveStep1Checked: boolean;
   saveStep2Checked: boolean;
   teaserTop: boolean;
+  // Internal render name (job list, filename, emails) — distinct from the
+  // title shown in the video. Empty means the server auto-generates one.
+  jobName: string;
   globalTitle: GlobalTitleData;
   clips: ClipData[];
   defaultDuration: number;
@@ -149,6 +152,7 @@ const initialState: CreateVideoState = {
   saveStep1Checked: false,
   saveStep2Checked: false,
   teaserTop: false,
+  jobName: "",
   globalTitle: { ...defaultGlobalTitle },
   clips: [makeClip(0)],
   defaultDuration: 5,
@@ -222,6 +226,9 @@ const createVideoSlice = createSlice({
     setTeaserTop(state, action: PayloadAction<boolean>) {
       state.teaserTop = action.payload;
     },
+    setJobName(state, action: PayloadAction<string>) {
+      state.jobName = action.payload;
+    },
     updateGlobalTitle(state, action: PayloadAction<Partial<GlobalTitleData>>) {
       state.globalTitle = { ...state.globalTitle, ...action.payload };
     },
@@ -283,6 +290,7 @@ const createVideoSlice = createSlice({
       state.highlightPreviewActiveIndex = action.payload;
     },
     resetStep2(state) {
+      state.jobName = initialState.jobName;
       state.globalTitle = { ...defaultGlobalTitle };
       state.clips = [makeClip(0)];
       state.defaultDuration = initialState.defaultDuration;
@@ -305,6 +313,7 @@ export const {
   setSaveStep2Checked,
   applyTemplateDefaults,
   setTeaserTop,
+  setJobName,
   addClip,
   removeClip,
   updateClip,

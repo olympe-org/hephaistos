@@ -197,7 +197,7 @@ function ParamRow({
 
 export default function ClipsSummary() {
   const {
-    clips, globalTitle, templateFeatures,
+    clips, globalTitle, templateFeatures, jobName,
     background, videoMargin, spacing, smoothTransition, watermark, highlightActive,
   } = useAppSelector((s) => s.createVideo);
 
@@ -247,6 +247,10 @@ export default function ClipsSummary() {
         </div>
 
         <Card title="Rendu">
+          <ParamRow
+            label="Nom du rendu"
+            value={jobName.trim() || "Généré automatiquement"}
+          />
           <ParamRow label="Fond" value={bgLabel} dot={background !== "video" ? background : undefined} />
           {videoMargin !== 0 && <ParamRow label="Marge vidéo" value={`${videoMargin}px`} />}
           <ParamRow label="Espacement" value={`${spacing}px`} />
