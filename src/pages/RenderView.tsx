@@ -10,7 +10,7 @@ import { errorMessage, saveVideo, type VideoMeta } from "@/pages/render-view/sha
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8001";
 
 export default function RenderView() {
-  usePageMeta({ title: "Ta vidéo · Vexia", path: "/render", indexable: false });
+  usePageMeta({ title: "Rendu vidéo · Vexia", path: "/render", indexable: false });
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const { jobId } = useParams<{ jobId: string }>();

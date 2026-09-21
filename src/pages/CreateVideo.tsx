@@ -135,7 +135,7 @@ export default function CreateVideo() {
 
   return (
     <section className="flex gap-10 px-6 lg:px-10">
-      <div className={`w-full ${colHeight} flex flex-col`}>
+      <div className={`w-full min-w-0 ${colHeight} flex flex-col`}>
         <StepHeader
           currentStep={currentStep}
           userFeatures={userFeatures}
@@ -146,7 +146,7 @@ export default function CreateVideo() {
 
         <div
           ref={contentRef}
-          className="no-scrollbar flex flex-1 flex-col gap-4 overflow-x-hidden overflow-y-auto py-6"
+          className="no-scrollbar flex min-w-0 flex-1 flex-col gap-4 overflow-x-hidden overflow-y-auto py-6"
         >
           {currentStep === 1 && <CreateVideoSelects />}
           {currentStep === 2 && (

@@ -89,7 +89,11 @@ export function useJobTimeline(job: RenderJob | null) {
     if (!job || !RUNNING_STATUSES.includes(job.status)) return;
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
-  }, [job]);
+    // Only status matters here — depending on the whole job object would tear
+    // down and recreate the interval on every SSE tick (every ~0.5s), which
+    // is faster than the interval's own delay, so it would never actually fire.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [job?.status]);
 
   // The overall elapsed timer is anchored to the backend's own timestamp, not
   // to whenever the frontend happened to receive the first SSE event — that

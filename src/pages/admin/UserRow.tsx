@@ -54,7 +54,10 @@ export default function UserRow({
   const [editOpen, setEditOpen] = useState(false);
   const [confirm, setConfirm] = useState<"revoke" | "delete" | null>(null);
   const [jobToDelete, setJobToDelete] = useState<JobRef | null>(null);
+  // qrJob is never cleared on close (only qrOpen is) — otherwise its title
+  // would blank out immediately while the dialog is still animating shut.
   const [qrJob, setQrJob] = useState<JobRef | null>(null);
+  const [qrOpen, setQrOpen] = useState(false);
 
   const handleEdit = async (form: UserFormData) => {
     const body: Record<string, unknown> = {
@@ -225,7 +228,10 @@ export default function UserRow({
           selectedJobId={selectedJobId}
           onSelectJob={onSelectJob}
           onCancelJob={onCancelJob}
-          onShowQr={setQrJob}
+          onShowQr={(job) => {
+            setQrJob(job);
+            setQrOpen(true);
+          }}
           onDeleteJob={setJobToDelete}
         />
       </div>
@@ -269,8 +275,8 @@ export default function UserRow({
         danger
       />
       <QrDialog
-        open={qrJob !== null}
-        onClose={() => setQrJob(null)}
+        open={qrOpen}
+        onClose={() => setQrOpen(false)}
         jobId={qrJob?.id ?? ""}
         title={qrJob?.title ?? ""}
       />

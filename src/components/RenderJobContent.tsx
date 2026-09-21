@@ -42,7 +42,7 @@ export default function RenderJobContent({ showMeta }: { showMeta?: boolean }) {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex min-w-0 flex-col gap-6">
       {showMeta && (
         <div className="flex flex-col gap-1">
           <span className="text-xs text-muted-foreground">Rendu</span>
@@ -59,7 +59,7 @@ export default function RenderJobContent({ showMeta }: { showMeta?: boolean }) {
       <RenderProgress />
 
       {job.status === "done" && job.job_id && (
-        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-muted/30 p-5">
+        <div className="flex min-w-0 flex-col gap-4 rounded-2xl border border-border bg-muted/30 p-5">
           {/* Click to open the QR code full-size */}
           <div className="flex items-center gap-5">
             <button
@@ -67,7 +67,7 @@ export default function RenderJobContent({ showMeta }: { showMeta?: boolean }) {
               aria-label="Agrandir le QR code"
               onClick={() => setQrOpen(true)}
               disabled={!shareUrl}
-              className="flex size-28 shrink-0 cursor-zoom-in items-center justify-center overflow-hidden rounded-xl bg-white p-3 shadow-sm outline-none transition-[transform,box-shadow] hover:scale-[1.03] hover:shadow-md focus-visible:ring-3 focus-visible:ring-violet-400/30 disabled:cursor-default"
+              className="flex size-28 shrink-0 cursor-zoom-in items-center justify-center overflow-hidden rounded-xl bg-white p-3 shadow-sm outline-none transition-[transform,box-shadow] duration-200 ease-out hover:scale-[1.03] hover:shadow-md focus-visible:ring-3 focus-visible:ring-violet-400/30 disabled:cursor-default"
             >
               {shareUrl ? (
                 <QRCodeSVG
