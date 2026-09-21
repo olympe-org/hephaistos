@@ -46,7 +46,9 @@ export default function RenderJobContent({ showMeta }: { showMeta?: boolean }) {
       {showMeta && (
         <div className="flex flex-col gap-1">
           <span className="text-xs text-muted-foreground">Rendu</span>
-          <span className="text-base font-semibold tracking-tight">{job.title}</span>
+          <span className="text-base font-semibold tracking-tight">
+            {job.title}
+          </span>
           <span className="text-xs text-muted-foreground">
             {new Date(job.created_at).toLocaleString("fr-FR", {
               dateStyle: "long",
@@ -67,7 +69,7 @@ export default function RenderJobContent({ showMeta }: { showMeta?: boolean }) {
               aria-label="Agrandir le QR code"
               onClick={() => setQrOpen(true)}
               disabled={!shareUrl}
-              className="flex size-28 shrink-0 cursor-zoom-in items-center justify-center overflow-hidden rounded-xl bg-white p-3 shadow-sm outline-none transition-[transform,box-shadow] duration-200 ease-out hover:scale-[1.03] hover:shadow-md focus-visible:ring-3 focus-visible:ring-violet-400/30 disabled:cursor-default"
+              className="flex size-28 shrink-0 cursor-zoom-in items-center justify-center overflow-hidden rounded-xl bg-white p-3 shadow-sm outline-none transition duration-200 ease-out hover:scale-[1.03] hover:shadow-md focus-visible:ring-3 focus-visible:ring-violet-400/30 disabled:cursor-default"
             >
               {shareUrl ? (
                 <QRCodeSVG
@@ -81,8 +83,8 @@ export default function RenderJobContent({ showMeta }: { showMeta?: boolean }) {
             <div className="flex flex-col gap-1">
               <span className="text-sm font-semibold">Sur ton téléphone</span>
               <p className="text-sm leading-relaxed text-muted-foreground">
-                Scanne le QR code pour ouvrir la vidéo, la regarder en plein écran
-                et la télécharger.
+                Scanne le QR code pour ouvrir la vidéo, la regarder en plein
+                écran et la télécharger.
               </p>
               <span className="text-xs text-muted-foreground/70">
                 Clique dessus pour l'agrandir.
@@ -126,7 +128,9 @@ export default function RenderJobContent({ showMeta }: { showMeta?: boolean }) {
             <DialogTitle className="text-xl font-semibold tracking-tight">
               QR code
             </DialogTitle>
-            <DialogDescription className="truncate">{job.title}</DialogDescription>
+            <DialogDescription className="truncate">
+              {job.title}
+            </DialogDescription>
           </DialogHeader>
           <div className="m-auto flex size-58 items-center justify-center overflow-hidden rounded-xl bg-white p-4">
             {shareUrl ? (

@@ -5,7 +5,7 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import MobilePlayer from "@/pages/render-view/MobilePlayer";
 import DesktopPlayer from "@/pages/render-view/DesktopPlayer";
-import { errorMessage, saveVideo, type VideoMeta } from "@/pages/render-view/shared";
+import { downloadBlob, errorMessage, saveVideo, type VideoMeta } from "@/pages/render-view/shared";
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8001";
 
@@ -13,6 +13,10 @@ export default function RenderView() {
   usePageMeta({ title: "Rendu vidéo · Vexia", path: "/render", indexable: false });
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  // A real laptop always gets a plain, forced download — some desktop
+  // browsers (e.g. Edge on Windows) also expose navigator.share, which would
+  // otherwise pop the OS share sheet instead of just saving the file.
+  const isLaptop = useMediaQuery("(min-width: 900px)");
   const { jobId } = useParams<{ jobId: string }>();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
@@ -83,7 +87,11 @@ export default function RenderView() {
     }
 
     try {
-      await saveVideo(blob);
+      if (isLaptop) {
+        downloadBlob(blob);
+      } else {
+        await saveVideo(blob);
+      }
     } catch {
       // User cancelled the share sheet — not an error
     } finally {

@@ -7,6 +7,7 @@ import {
   LoaderIcon,
   Share2Icon,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { usePauseOnHidden } from "@/hooks/usePauseOnHidden";
@@ -113,6 +114,18 @@ export default function DesktopPlayer({
                 {metaLine && (
                   <p className="text-sm text-muted-foreground">{metaLine}</p>
                 )}
+              </div>
+
+              <div className="flex items-center gap-4">
+                <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-2.5 shadow-sm">
+                  <QRCodeSVG
+                    value={window.location.href}
+                    size={72}
+                  />
+                </div>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  Scanne pour ouvrir la vidéo sur ton téléphone.
+                </p>
               </div>
 
               <div className="flex items-center gap-3">

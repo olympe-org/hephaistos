@@ -22,16 +22,14 @@ export default function RenderProgress() {
   const isFailed = job.status === "failed";
   const isProcessing = job.status === "processing";
 
-  // Indicative progress: clips downloaded / total, indeterminate during assembly
+  // Indicative progress: each clip is a step, plus one more for the final
+  // assembly — climbs steadily through both phases instead of jumping to an
+  // indeterminate state once downloads finish.
   const totalClips = job.clips?.length ?? 0;
   const doneClips = job.clips?.filter((c) => c.status === "done").length ?? 0;
-  const progress = isDone
-    ? 100
-    : isProcessing
-      ? null
-      : totalClips > 0
-        ? Math.round((doneClips / totalClips) * 100)
-        : 0;
+  const totalSteps = totalClips + 1;
+  const completedSteps = isDone ? totalSteps : isProcessing ? totalClips : doneClips;
+  const progress = Math.round((completedSteps / totalSteps) * 100);
 
   const statusLabel =
     job.message ??
@@ -62,8 +60,8 @@ export default function RenderProgress() {
           <div
             className={`h-full rounded-full transition-[width] duration-500 ${
               isFailed || isCancelled ? "bg-destructive" : "bg-foreground"
-            } ${progress === null ? "w-1/3 animate-pulse" : ""}`}
-            style={progress !== null ? { width: `${progress}%` } : undefined}
+            }`}
+            style={{ width: `${progress}%` }}
           />
         </div>
         {/* Discreet reminder: e-mail notification once the render is done */}
