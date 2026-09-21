@@ -1,4 +1,7 @@
+import { useEffect, useState } from "react";
+import { LoaderIcon } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
+import { getShareLink } from "@/utils/api/render";
 import {
   Dialog,
   DialogContent,
@@ -7,7 +10,8 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 
-// QR code linking to a render's mobile page (the token is passed in the URL)
+// QR code linking to a render's mobile page — the link is a short-lived
+// (~48h) share link fetched from the backend, not the user's own auth token.
 export default function QrDialog({
   open,
   onClose,
@@ -19,8 +23,22 @@ export default function QrDialog({
   jobId: string;
   title: string;
 }) {
-  const token = localStorage.getItem("token") ?? "";
-  const url = `${window.location.origin}/render/${jobId}?token=${token}`;
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open || !jobId) return;
+    let cancelled = false;
+    getShareLink(jobId)
+      .then((link) => {
+        if (!cancelled) setUrl(link.url);
+      })
+      .catch(() => {
+        if (!cancelled) setUrl(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, jobId]);
 
   return (
     <Dialog
@@ -34,11 +52,15 @@ export default function QrDialog({
           </DialogTitle>
           <DialogDescription className="truncate">{title}</DialogDescription>
         </DialogHeader>
-        <div className="m-auto flex w-fit items-center justify-center overflow-hidden rounded-xl bg-white p-4">
-          <QRCodeSVG
-            value={url}
-            size={180}
-          />
+        <div className="m-auto flex size-[212px] items-center justify-center overflow-hidden rounded-xl bg-white p-4">
+          {url ? (
+            <QRCodeSVG
+              value={url}
+              size={180}
+            />
+          ) : (
+            <LoaderIcon className="size-5 animate-spin text-muted-foreground/60" />
+          )}
         </div>
       </DialogContent>
     </Dialog>

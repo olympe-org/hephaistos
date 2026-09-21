@@ -1,8 +1,9 @@
-import { DownloadIcon, LoaderIcon, QrCodeIcon, TrashIcon, XIcon } from "lucide-react";
+import { DownloadIcon, LoaderIcon, QrCodeIcon, Share2Icon, TrashIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
 import IconAction from "@/components/IconAction";
 import { formatBytes, formatDuration } from "@/lib/format";
 import { TERMINAL_STATUSES } from "@/lib/jobs";
+import { copyShareLink } from "@/lib/shareLink";
 import type { RenderJob } from "@/store/renderSlice";
 import type { AdminUser } from "@/utils/api/admin";
 import { cancelRender, downloadVideo } from "@/utils/api/render";
@@ -157,6 +158,17 @@ export default function UserJobs({
                     onClick={() => onShowQr({ id: job.id, title: job.title })}
                   >
                     <QrCodeIcon />
+                  </IconAction>
+                  <IconAction
+                    aria-label="Partager"
+                    title="Partager"
+                    onClick={() =>
+                      copyShareLink(job.id).catch(() =>
+                        toast.error("Impossible de générer le lien de partage."),
+                      )
+                    }
+                  >
+                    <Share2Icon />
                   </IconAction>
                   <IconAction
                     danger

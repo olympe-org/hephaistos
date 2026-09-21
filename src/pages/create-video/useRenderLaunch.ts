@@ -5,7 +5,7 @@ import { setJob, updateJob, type RenderJob } from "@/store/renderSlice";
 import {
   buildRenderBody,
   cancelRender,
-  getVideoObjectUrl,
+  getShareLink,
   startRender,
   subscribeToJob,
 } from "@/utils/api/render";
@@ -25,21 +25,15 @@ export function useRenderLaunch(createVideoState: CreateVideoState, job: RenderJ
     return () => cleanupRef.current?.();
   }, []);
 
-  // Once the render is done, load the video into the preview
+  // Once the render is done, load a streamable share link into the preview
+  // (a direct <video src>, not a Blob — the browser streams it progressively)
   useEffect(() => {
     if (job?.status === "done" && job.job_id) {
-      getVideoObjectUrl(job.job_id)
-        .then(setVideoUrl)
+      getShareLink(job.job_id)
+        .then(({ url }) => setVideoUrl(url))
         .catch((err) => console.error("Failed to load video preview:", err));
     }
   }, [job?.status, job?.job_id]);
-
-  // Release the blob URL when it changes or the component unmounts
-  useEffect(() => {
-    return () => {
-      if (videoUrl) URL.revokeObjectURL(videoUrl);
-    };
-  }, [videoUrl]);
 
   const launch = async () => {
     setLaunchError(null);

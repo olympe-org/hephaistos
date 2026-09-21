@@ -1,6 +1,8 @@
-import { useState } from "react";
-import { useAppSelector } from "@/store";
+import { useEffect, useState } from "react";
+import { CheckIcon, CopyIcon, LoaderIcon } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
+import { useAppSelector } from "@/store";
+import { getShareLink } from "@/utils/api/render";
 import RenderProgress from "./RenderProgress";
 import {
   Dialog,
@@ -13,15 +15,30 @@ import {
 export default function RenderJobContent({ showMeta }: { showMeta?: boolean }) {
   const job = useAppSelector((s) => s.render.job);
   const [qrOpen, setQrOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  // Share link fetched once the render is done, reused by both the QR code
+  // and the "copy link" row below — no need to ask the backend for it twice.
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (job?.status === "done" && job.job_id) {
+      getShareLink(job.job_id)
+        .then(({ url }) => setShareUrl(url))
+        .catch(() => setShareUrl(null));
+    }
+  }, [job?.status, job?.job_id]);
 
   if (!job) return null;
 
-  const token = localStorage.getItem("token") ?? "";
-  const qrUrl = `${window.location.origin}/render/${job.job_id}?token=${token}`;
+  const handleCopy = async () => {
+    if (!shareUrl) return;
+    await navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="flex flex-col gap-6">
-
       {showMeta && (
         <div className="flex flex-col gap-1">
           <span className="text-xs text-muted-foreground">Rendu</span>
@@ -38,16 +55,24 @@ export default function RenderJobContent({ showMeta }: { showMeta?: boolean }) {
       <RenderProgress />
 
       {job.status === "done" && job.job_id && (
-        <>
-          <div className="flex items-center gap-5 rounded-2xl border border-border bg-muted/30 p-5">
-            {/* Le QR s'ouvre en grand au clic */}
+        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-muted/30 p-5">
+          {/* QR : le lien s'ouvre en grand au clic */}
+          <div className="flex items-center gap-5">
             <button
               type="button"
               aria-label="Agrandir le QR code"
               onClick={() => setQrOpen(true)}
-              className="shrink-0 cursor-zoom-in overflow-hidden rounded-xl bg-white p-3 shadow-sm outline-none transition-[transform,box-shadow] hover:scale-[1.03] hover:shadow-md focus-visible:ring-3 focus-visible:ring-violet-400/30"
+              disabled={!shareUrl}
+              className="flex size-28 shrink-0 cursor-zoom-in items-center justify-center overflow-hidden rounded-xl bg-white p-3 shadow-sm outline-none transition-[transform,box-shadow] hover:scale-[1.03] hover:shadow-md focus-visible:ring-3 focus-visible:ring-violet-400/30 disabled:cursor-default"
             >
-              <QRCodeSVG value={qrUrl} size={112} />
+              {shareUrl ? (
+                <QRCodeSVG
+                  value={shareUrl}
+                  size={112}
+                />
+              ) : (
+                <LoaderIcon className="size-5 animate-spin text-muted-foreground/60" />
+              )}
             </button>
             <div className="flex flex-col gap-1">
               <span className="text-sm font-semibold">Sur ton téléphone</span>
@@ -61,22 +86,54 @@ export default function RenderJobContent({ showMeta }: { showMeta?: boolean }) {
             </div>
           </div>
 
-          <Dialog open={qrOpen} onOpenChange={setQrOpen}>
-            <DialogContent className="max-w-xs rounded-2xl p-6">
-              <DialogHeader>
-                <DialogTitle className="text-xl font-semibold tracking-tight">
-                  QR code
-                </DialogTitle>
-                <DialogDescription className="truncate">{job.title}</DialogDescription>
-              </DialogHeader>
-              <div className="m-auto flex w-fit items-center justify-center overflow-hidden rounded-xl bg-white p-4">
-                <QRCodeSVG value={qrUrl} size={200} />
-              </div>
-            </DialogContent>
-          </Dialog>
-        </>
+          {/* Lien de partage : même geste "copier" que l'e-mail de contact sur la page de connexion */}
+          <button
+            type="button"
+            onClick={handleCopy}
+            disabled={!shareUrl}
+            className="group flex items-center justify-between gap-3 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm transition-colors hover:bg-muted/60 disabled:pointer-events-none disabled:opacity-60"
+          >
+            <span className="truncate font-mono text-xs text-muted-foreground">
+              {shareUrl ?? "Génération du lien…"}
+            </span>
+            <span className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
+              {copied ? (
+                <>
+                  <CheckIcon className="size-3.5 text-green-500" />
+                  <span className="font-medium text-green-500">Copié</span>
+                </>
+              ) : (
+                <>
+                  <CopyIcon className="size-3.5" />
+                  <span className="font-medium">Copier le lien</span>
+                </>
+              )}
+            </span>
+          </button>
+        </div>
       )}
 
+      <Dialog
+        open={qrOpen}
+        onOpenChange={setQrOpen}
+      >
+        <DialogContent className="max-w-xs rounded-2xl p-6">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold tracking-tight">
+              QR code
+            </DialogTitle>
+            <DialogDescription className="truncate">{job.title}</DialogDescription>
+          </DialogHeader>
+          <div className="m-auto flex w-fit items-center justify-center overflow-hidden rounded-xl bg-white p-4">
+            {shareUrl && (
+              <QRCodeSVG
+                value={shareUrl}
+                size={200}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

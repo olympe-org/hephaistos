@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { DownloadIcon, LoaderIcon, QrCodeIcon, XIcon } from "lucide-react";
+import { DownloadIcon, LoaderIcon, QrCodeIcon, Share2Icon, XIcon } from "lucide-react";
 import { toast } from "sonner";
 import IconAction from "@/components/IconAction";
 import QrDialog from "@/components/QrDialog";
 import { formatBytes, formatDuration } from "@/lib/format";
+import { copyShareLink } from "@/lib/shareLink";
 import type { RenderJob } from "@/store/renderSlice";
 import type { MeJob } from "@/utils/api/auth";
 import { cancelRender, downloadVideo } from "@/utils/api/render";
@@ -153,6 +154,17 @@ export default function JobRow({
                   onClick={() => setQrOpen(true)}
                 >
                   <QrCodeIcon />
+                </IconAction>
+                <IconAction
+                  aria-label="Partager"
+                  title="Partager"
+                  onClick={() =>
+                    copyShareLink(job.job_id).catch(() =>
+                      toast.error("Impossible de générer le lien de partage."),
+                    )
+                  }
+                >
+                  <Share2Icon />
                 </IconAction>
               </div>
             </div>

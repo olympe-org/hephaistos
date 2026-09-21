@@ -182,11 +182,6 @@ async function fetchVideoBlob(jobId: string): Promise<Blob> {
   return new Blob(chunks, { type: "video/mp4" });
 }
 
-export async function getVideoObjectUrl(jobId: string): Promise<string> {
-  const blob = await fetchVideoBlob(jobId);
-  return URL.createObjectURL(blob);
-}
-
 export async function downloadVideo(jobId: string): Promise<void> {
   const blob = await fetchVideoBlob(jobId);
   const url = URL.createObjectURL(blob);
@@ -197,6 +192,21 @@ export async function downloadVideo(jobId: string): Promise<void> {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+// ─── GET /jobs/{job_id}/share-link ────────────────────────────────────────────
+
+export interface ShareLink {
+  // Direct, streamable URL (short-lived token, ~48h) — use as a <video src>
+  // or QR code target instead of downloading the whole file into a Blob.
+  url: string;
+  expires_at: string;
+}
+
+export async function getShareLink(jobId: string): Promise<ShareLink> {
+  const res = await fetchAuth(`${BASE_URL}/jobs/${jobId}/share-link`);
+  if (!res.ok) throw new Error("Failed to get share link");
+  return res.json();
 }
 
 // ─── Public metrics ───────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getVideoObjectUrl } from "@/utils/api/render";
+import { getShareLink } from "@/utils/api/render";
 
 interface LoadedVideo {
   jobId: string;
@@ -8,26 +8,21 @@ interface LoadedVideo {
   url: string | null;
 }
 
-// Loads the selected render's video as an object URL, and releases the previous one
+// Loads a direct, streamable URL for the selected render (a short-lived share
+// link from the backend) so the <video> tag can play it progressively —
+// no more downloading the whole file into a Blob before showing anything.
 export function useVideoPreview(jobId: string | null) {
   // We keep the video together with its render's id: it's only shown if the
   // selection hasn't changed in the meantime (no need to reset it in the effect)
   const [loaded, setLoaded] = useState<LoadedVideo | null>(null);
-  const urlRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!jobId) return;
 
     let cancelled = false;
-    getVideoObjectUrl(jobId)
-      .then((url) => {
-        if (cancelled) {
-          URL.revokeObjectURL(url);
-          return;
-        }
-        if (urlRef.current) URL.revokeObjectURL(urlRef.current);
-        urlRef.current = url;
-        setLoaded({ jobId, url });
+    getShareLink(jobId)
+      .then(({ url }) => {
+        if (!cancelled) setLoaded({ jobId, url });
       })
       .catch(() => {
         if (cancelled) return;
@@ -39,13 +34,6 @@ export function useVideoPreview(jobId: string | null) {
       cancelled = true;
     };
   }, [jobId]);
-
-  // Release the URL on unmount
-  useEffect(() => {
-    return () => {
-      if (urlRef.current) URL.revokeObjectURL(urlRef.current);
-    };
-  }, []);
 
   const current = loaded && loaded.jobId === jobId ? loaded : null;
 
