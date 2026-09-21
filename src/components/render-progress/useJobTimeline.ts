@@ -9,7 +9,6 @@ export interface ClipTiming {
 }
 
 interface Timestamps {
-  startedAt: number | null;
   downloadingAt: number | null;
   processingAt: number | null;
   doneAt: number | null;
@@ -17,7 +16,6 @@ interface Timestamps {
 }
 
 const NO_TIMESTAMPS: Timestamps = {
-  startedAt: null,
   downloadingAt: null,
   processingAt: null,
   doneAt: null,
@@ -35,20 +33,24 @@ export function useJobTimeline(job: RenderJob | null) {
   const prevStatusRef = useRef<RenderStatus | null>(null);
   const prevClipsRef = useRef<ClipRenderData[] | undefined>(undefined);
 
-  // Timestamps each status transition (once per status)
+  // Timestamps each status transition (once per status). The update is
+  // deferred by a tick (same pattern as Layout.tsx's banner) rather than
+  // calling setState synchronously in the effect body.
   useEffect(() => {
     if (!job || job.status === prevStatusRef.current) return;
     const now = Date.now();
-    const isFirstStatus = prevStatusRef.current === null;
-    prevStatusRef.current = job.status;
+    const status = job.status;
+    prevStatusRef.current = status;
 
-    setTimestamps((prev) => ({
-      startedAt: isFirstStatus ? now : prev.startedAt,
-      downloadingAt: job.status === "downloading" ? (prev.downloadingAt ?? now) : prev.downloadingAt,
-      processingAt: job.status === "processing" ? (prev.processingAt ?? now) : prev.processingAt,
-      doneAt: job.status === "done" ? (prev.doneAt ?? now) : prev.doneAt,
-      cancelledAt: job.status === "cancelled" ? (prev.cancelledAt ?? now) : prev.cancelledAt,
-    }));
+    const id = setTimeout(() => {
+      setTimestamps((prev) => ({
+        downloadingAt: status === "downloading" ? (prev.downloadingAt ?? now) : prev.downloadingAt,
+        processingAt: status === "processing" ? (prev.processingAt ?? now) : prev.processingAt,
+        doneAt: status === "done" ? (prev.doneAt ?? now) : prev.doneAt,
+        cancelledAt: status === "cancelled" ? (prev.cancelledAt ?? now) : prev.cancelledAt,
+      }));
+    }, 0);
+    return () => clearTimeout(id);
   }, [job]);
 
   // Timestamps the start and end of each clip's download
@@ -89,6 +91,14 @@ export function useJobTimeline(job: RenderJob | null) {
     return () => clearInterval(id);
   }, [job]);
 
+  // The overall elapsed timer is anchored to the backend's own timestamp, not
+  // to whenever the frontend happened to receive the first SSE event — that
+  // moment can lag behind the real job creation (connection latency,
+  // reconnects…), and created_at is the only value the server actually
+  // vouches for. Parsing a fixed ISO string is pure (same input, same
+  // output), unlike Date.now(), so this is safe to compute during render.
+  const startedAt = job ? new Date(job.created_at).getTime() : null;
+
   const frozenAt = timestamps.cancelledAt ?? timestamps.doneAt;
 
   return {
@@ -96,7 +106,7 @@ export function useJobTimeline(job: RenderJob | null) {
     downloadingAt: timestamps.downloadingAt,
     processingAt: timestamps.processingAt,
     doneAt: timestamps.doneAt,
-    totalElapsed: timestamps.startedAt ? (frozenAt ?? now) - timestamps.startedAt : null,
+    totalElapsed: startedAt ? (frozenAt ?? now) - startedAt : null,
     downloadElapsed: timestamps.downloadingAt
       ? (timestamps.processingAt ?? frozenAt ?? now) - timestamps.downloadingAt
       : null,
