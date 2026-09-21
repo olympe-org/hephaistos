@@ -26,9 +26,18 @@ function PageFallback() {
   );
 }
 
-// RenderView renders outside Layout, full-screen and dark — match that here
-// so there's no flash of the light app shell before its chunk loads.
+// RenderView renders outside Layout — mobile is a full-screen dark player,
+// desktop/tablet a normal light-shell page, so match whichever one applies
+// here too, avoiding a flash of the wrong background before its chunk loads.
 function RenderViewFallback() {
+  const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+  if (isDesktop) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <LoaderIcon className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black">
       <LoaderIcon className="size-6 animate-spin text-white/70" />

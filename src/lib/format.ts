@@ -12,6 +12,6 @@ export function formatBytes(bytes: number): string {
 export function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
-  if (m > 0) return `${m}min${s > 0 ? ` ${s}s` : ""}`;
+  if (m > 0) return `${m}min${m > 1 ? "s" : ""}${s > 0 ? ` ${s}s` : ""}`;
   return `${seconds}s`;
 }
