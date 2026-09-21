@@ -5,7 +5,7 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import MobilePlayer from "@/pages/render-view/MobilePlayer";
 import DesktopPlayer from "@/pages/render-view/DesktopPlayer";
-import { errorMessage, filenameFromDisposition, saveVideo, type VideoMeta } from "@/pages/render-view/shared";
+import { errorMessage, saveVideo, type VideoMeta } from "@/pages/render-view/shared";
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8001";
 
@@ -51,11 +51,9 @@ export default function RenderView() {
           const body = await res.json().catch(() => null);
           throw new Error(errorMessage(body, "Vidéo non disponible."));
         }
-        // Content-Length is CORS-safelisted so it's always readable;
-        // Content-Disposition needs the server to expose it, so this title
-        // is best-effort and simply stays null otherwise.
         const size = res.headers.get("content-length");
-        const title = filenameFromDisposition(res.headers.get("content-disposition"));
+        const rawTitle = res.headers.get("X-Job-Title");
+        const title = rawTitle ? decodeURIComponent(rawTitle) : null;
         setMeta((m) => ({ ...m, title, sizeBytes: size ? Number(size) : null }));
         controller.abort();
         setVideoUrl(downloadUrl);

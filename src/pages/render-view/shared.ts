@@ -28,19 +28,6 @@ export async function saveVideo(blob: Blob) {
   URL.revokeObjectURL(url);
 }
 
-// Best-effort: only works if the server exposes Content-Disposition via CORS.
-// Falls back gracefully (null) everywhere else — never blocks the page.
-export function filenameFromDisposition(disposition: string | null): string | null {
-  if (!disposition) return null;
-  const match = disposition.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
-  if (!match) return null;
-  try {
-    return decodeURIComponent(match[1]).replace(/\.mp4$/i, "");
-  } catch {
-    return match[1].replace(/\.mp4$/i, "");
-  }
-}
-
 export interface VideoMeta {
   title: string | null;
   sizeBytes: number | null;

@@ -45,6 +45,8 @@ export default function DesktopPlayer({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const title = meta.title ?? "Rendu Vexia";
+
   const metaLine = [
     meta.durationSeconds
       ? formatDuration(Math.round(meta.durationSeconds))
@@ -99,11 +101,11 @@ export default function DesktopPlayer({
                 a passing link check doesn't guarantee it, and the layout
                 stays stable once it's revealed */}
             <div
-              className={`flex w-full max-w-xs flex-col items-start justify-self-end gap-4 text-left ${loading ? "invisible" : ""}`}
+              className={`flex w-full min-w-0 max-w-xs flex-col items-start justify-self-end gap-4 text-left ${loading ? "invisible" : ""}`}
             >
-              <div className="flex flex-col gap-1.5">
-                <h1 className="text-2xl font-semibold tracking-tight text-balance">
-                  {meta.title ?? "Rendu Vexia"}
+              <div className="flex min-w-0 flex-col gap-1.5">
+                <h1 className="w-full flex-wrap text-balance wrap-break-word text-2xl font-semibold tracking-tight">
+                  {title}
                 </h1>
                 {metaLine && (
                   <p className="text-sm text-muted-foreground">{metaLine}</p>
@@ -151,7 +153,7 @@ export default function DesktopPlayer({
 
             <div
               className={`relative shrink-0 overflow-hidden ${loading ? "" : "rounded-[24px] border border-border bg-muted/30 shadow-xl"}`}
-              style={{ aspectRatio: "9/16", height: "min(92%, 760px)" }}
+              style={{ aspectRatio: "9/16", height: "min(78%, 620px)" }}
             >
               {/* Mounted as soon as the link check passes so it can actually
                   start loading — it must stay in the DOM while `loading` is
