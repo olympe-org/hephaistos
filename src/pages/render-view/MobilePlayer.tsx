@@ -1,5 +1,7 @@
+import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRightIcon, DownloadIcon } from "lucide-react";
+import { usePauseOnHidden } from "@/hooks/usePauseOnHidden";
 
 // The immersive, full-screen phone experience — this is how the vast
 // majority of shared links are actually opened (someone taps it on their
@@ -21,6 +23,9 @@ export default function MobilePlayer({
   onVideoReady: () => void;
   onVideoError: () => void;
 }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  usePauseOnHidden(videoRef);
+
   if (error) {
     // Same shape as the 404 page (badge, accent heading, pill button), but in
     // literal white-on-black — this route stands alone (no Navbar, no theme
@@ -59,6 +64,7 @@ export default function MobilePlayer({
           passing link check doesn't guarantee the video itself will load. */}
       {videoUrl && (
         <video
+          ref={videoRef}
           src={videoUrl}
           autoPlay
           loop

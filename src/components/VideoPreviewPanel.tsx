@@ -1,4 +1,6 @@
+import { useRef } from "react";
 import { FilmIcon, LoaderIcon } from "lucide-react";
+import { usePauseOnHidden } from "@/hooks/usePauseOnHidden";
 
 // Right column of the user / admin pages: 9:16 player for the selected render
 export default function VideoPreviewPanel({
@@ -10,6 +12,9 @@ export default function VideoPreviewPanel({
   videoUrl: string | null;
   loading: boolean;
 }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  usePauseOnHidden(videoRef);
+
   return (
     <div className="flex h-[calc(100vh-var(--nav-h))] shrink-0 flex-col pt-2 pb-8">
       <div className="flex shrink-0 flex-col gap-1.5 pb-6">
@@ -33,6 +38,7 @@ export default function VideoPreviewPanel({
             </div>
           ) : jobId && videoUrl ? (
             <video
+              ref={videoRef}
               key={jobId}
               src={videoUrl}
               autoPlay

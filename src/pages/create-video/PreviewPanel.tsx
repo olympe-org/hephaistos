@@ -1,6 +1,7 @@
-import type { RefObject } from "react";
+import { useRef, type RefObject } from "react";
 import { PauseIcon, PlayIcon } from "lucide-react";
 import TemplatePreview from "@/components/TemplatePreview";
+import { usePauseOnHidden } from "@/hooks/usePauseOnHidden";
 import { capitalize } from "@/utils";
 
 // Right column: 9:16 preview (animated, can be paused) while editing, then the
@@ -34,6 +35,9 @@ export default function PreviewPanel({
   previewResetKey: number;
   onTogglePreview: () => void;
 }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  usePauseOnHidden(videoRef);
+
   const title =
     currentStep === 3
       ? isDone
@@ -68,6 +72,7 @@ export default function PreviewPanel({
         >
           {showVideo ? (
             <video
+              ref={videoRef}
               src={videoUrl}
               autoPlay
               loop

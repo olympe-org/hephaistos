@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRightIcon,
@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
+import { usePauseOnHidden } from "@/hooks/usePauseOnHidden";
 import { formatBytes, formatDuration } from "@/lib/format";
 import type { VideoMeta } from "./shared";
 
@@ -38,6 +39,8 @@ export default function DesktopPlayer({
   onVideoError: () => void;
 }) {
   const [copied, setCopied] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  usePauseOnHidden(videoRef);
 
   const handleShare = async () => {
     await navigator.clipboard.writeText(window.location.href);
@@ -162,6 +165,7 @@ export default function DesktopPlayer({
                   box shows before the video is actually ready. */}
               {videoUrl && (
                 <video
+                  ref={videoRef}
                   src={videoUrl}
                   controls
                   playsInline
