@@ -31,9 +31,17 @@ export default function RenderProgress() {
   const completedSteps = isDone ? totalSteps : isProcessing ? totalClips : doneClips;
   const progress = Math.round((completedSteps / totalSteps) * 100);
 
-  const statusLabel =
-    job.message ??
-    (isDone ? "Vidéo prête" : isFailed ? "Erreur" : isCancelled ? "Annulé" : "En attente…");
+  // Terminal states always win over the last live message — otherwise a
+  // failure/cancellation kept showing whatever the backend last said while
+  // it was still downloading (e.g. "Téléchargement en cours..."). The error
+  // detail itself stays in the box below, not up here.
+  const statusLabel = isDone
+    ? "Vidéo prête"
+    : isFailed
+      ? "Erreur"
+      : isCancelled
+        ? "Annulé"
+        : (job.message ?? "En attente…");
 
   return (
     <div className="flex flex-col gap-3">
