@@ -1,6 +1,6 @@
-import { LoaderIcon, PlusIcon, RefreshCwIcon, XIcon } from "lucide-react";
+import type { ReactNode, RefObject } from "react";
+import { LoaderIcon, XIcon } from "lucide-react";
 import SectionTitle from "@/components/SectionTitle";
-import { Button } from "@/components/ui/button";
 import type { RenderJob } from "@/store/renderSlice";
 import type { AdminUser } from "@/utils/api/admin";
 import UserRow from "./UserRow";
@@ -10,7 +10,8 @@ export default function UsersSection({
   users,
   loading,
   onRefresh,
-  onCreate,
+  titleRef,
+  actions,
   selectedJobId,
   onSelectJob,
   onJobDeleted,
@@ -20,7 +21,10 @@ export default function UsersSection({
   users: AdminUser[];
   loading: boolean;
   onRefresh: () => void;
-  onCreate: () => void;
+  // Watched to move `actions` up into the page header once this title
+  // scrolls out of view — see Admin.tsx
+  titleRef?: RefObject<HTMLDivElement | null>;
+  actions?: ReactNode;
   selectedJobId: string | null;
   onSelectJob: (jobId: string) => void;
   onJobDeleted: (jobId: string) => void;
@@ -29,33 +33,13 @@ export default function UsersSection({
 }) {
   return (
     <div className="flex flex-col gap-4">
-      <SectionTitle
-        title="Comptes"
-        description={`${users.length} utilisateur${users.length !== 1 ? "s" : ""}`}
-        action={
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onRefresh}
-              disabled={loading}
-              className="size-9 rounded-full p-0"
-            >
-              <RefreshCwIcon
-                className={`size-3.5 ${loading ? "animate-spin" : ""}`}
-              />
-            </Button>
-            <Button
-              size="sm"
-              onClick={onCreate}
-              className="h-9 gap-1.5 rounded-full px-4 text-sm"
-            >
-              <PlusIcon className="size-3.5" />
-              Nouvel utilisateur
-            </Button>
-          </div>
-        }
-      />
+      <div ref={titleRef}>
+        <SectionTitle
+          title="Comptes"
+          description={`${users.length} utilisateur${users.length !== 1 ? "s" : ""}`}
+          action={actions}
+        />
+      </div>
 
       <div className="flex flex-col gap-3">
         {loading && users.length === 0 ? (
