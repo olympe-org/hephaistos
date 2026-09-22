@@ -56,6 +56,17 @@ export async function startRender(body: object): Promise<RenderJob> {
 // ─── GET /jobs/{job_id}/stream ───────────────────────────────────────────────
 // fetch + ReadableStream so we can send the Authorization header
 
+// A job purged from server memory mid-stream (restart, cleanup once terminal)
+// reports just {"error": "..."} with no status — unlike every other event,
+// which always has one. It doesn't mean the render failed, just that we lost
+// its live updates, so it's surfaced via `message` rather than `status`.
+const TRACKING_LOST_MESSAGE =
+  "Connexion au suivi perdue. Tu recevras un e-mail dès que ta vidéo sera prête.";
+
+function isTrackingLostEvent(data: Partial<RenderJob>): boolean {
+  return "error" in data && data.status === undefined;
+}
+
 export function subscribeToJob(jobId: string, dispatch: AppDispatch): () => void {
   const controller = new AbortController();
 
@@ -89,6 +100,11 @@ export function subscribeToJob(jobId: string, dispatch: AppDispatch): () => void
           if (!line.startsWith("data: ")) continue;
           try {
             const data: Partial<RenderJob> = JSON.parse(line.slice(6));
+            if (isTrackingLostEvent(data)) {
+              dispatch(updateJob({ message: TRACKING_LOST_MESSAGE }));
+              controller.abort();
+              return;
+            }
             dispatch(updateJob(data));
             if (data.status === "done" || data.status === "failed" || data.status === "cancelled") {
               controller.abort();
@@ -141,7 +157,13 @@ export function subscribeToJobCallback(
         for (const line of lines) {
           if (!line.startsWith("data: ")) continue;
           try {
-            onUpdate(JSON.parse(line.slice(6)) as Partial<RenderJob>);
+            const data = JSON.parse(line.slice(6)) as Partial<RenderJob>;
+            if (isTrackingLostEvent(data)) {
+              onUpdate({ message: TRACKING_LOST_MESSAGE });
+              controller.abort();
+              return;
+            }
+            onUpdate(data);
           } catch { /* ignore */ }
         }
       }
