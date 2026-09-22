@@ -26,7 +26,13 @@ const REFRESH_DELAY_MS = 5_000;
 
 // Crossfades between the two spots `usersActions` can appear in — visible
 // fades in only once the other spot is mostly done fading out
-function ActionsSlot({ visible, children }: { visible: boolean; children: ReactNode }) {
+function ActionsSlot({
+  visible,
+  children,
+}: {
+  visible: boolean;
+  children: ReactNode;
+}) {
   return (
     <div
       className={`transition-opacity duration-200 ${
@@ -40,7 +46,11 @@ function ActionsSlot({ visible, children }: { visible: boolean; children: ReactN
 
 // Admin dashboard: site figures, server status, account management
 export default function Admin() {
-  usePageMeta({ title: "Administration · Vexia", path: "/admin", indexable: false });
+  usePageMeta({
+    title: "Administration · Vexia",
+    path: "/admin",
+    indexable: false,
+  });
 
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,12 +94,13 @@ export default function Admin() {
       ([entry]) => {
         // Only when it's scrolled past above (not simply not-reached-yet below)
         const scrolledPastTop =
-          !entry.isIntersecting && entry.boundingClientRect.top < (entry.rootBounds?.top ?? 0);
+          !entry.isIntersecting &&
+          entry.boundingClientRect.top < (entry.rootBounds?.top ?? 0);
         setActionsInHeader(scrolledPastTop);
       },
       // Grows the root 24px past the top, so the swap fires 24px late —
       // only once the title has been fully hidden for a bit, not right at the edge
-      { root, threshold: 0, rootMargin: "24px 0px 0px 0px" },
+      { root, threshold: 0, rootMargin: "12px 0px 0px 0px" },
     );
     observer.observe(target);
     return () => observer.disconnect();
@@ -135,7 +146,9 @@ export default function Admin() {
         disabled={loading}
         className="size-9 rounded-full p-0"
       >
-        <RefreshCwIcon className={`size-3.5 ${loading ? "animate-spin" : ""}`} />
+        <RefreshCwIcon
+          className={`size-3.5 ${loading ? "animate-spin" : ""}`}
+        />
       </Button>
       <Button
         size="sm"
@@ -154,7 +167,9 @@ export default function Admin() {
         <PageHeader
           eyebrow="Administration"
           title="Dashboard"
-          action={<ActionsSlot visible={actionsInHeader}>{usersActions}</ActionsSlot>}
+          action={
+            <ActionsSlot visible={actionsInHeader}>{usersActions}</ActionsSlot>
+          }
         />
         <div className="h-px shrink-0 bg-border" />
 
@@ -175,7 +190,11 @@ export default function Admin() {
             loading={loading}
             onRefresh={fetchUsers}
             titleRef={usersTitleRef}
-            actions={<ActionsSlot visible={!actionsInHeader}>{usersActions}</ActionsSlot>}
+            actions={
+              <ActionsSlot visible={!actionsInHeader}>
+                {usersActions}
+              </ActionsSlot>
+            }
             selectedJobId={selectedJobId}
             onSelectJob={setSelectedJobId}
             onJobDeleted={(id) => {
