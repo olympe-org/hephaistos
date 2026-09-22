@@ -14,7 +14,7 @@ export default function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex shrink-0 items-start justify-between gap-4 pt-2 pb-6">
+    <div className="flex shrink-0 items-end justify-between gap-4 pt-2 pb-6">
       <div className="flex flex-col gap-1.5">
         <span className="text-sm text-muted-foreground">{eyebrow}</span>
         <div className="flex flex-wrap items-center gap-3">

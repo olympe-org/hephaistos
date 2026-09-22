@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { PlusIcon, RefreshCwIcon } from "lucide-react";
 import { toast } from "sonner";
 import PageHeader from "@/components/PageHeader";
@@ -23,6 +23,20 @@ import { useSystemMetrics } from "./admin/useSystemMetrics";
 
 // Delay before reloading accounts after a render finishes (the backend is finalizing)
 const REFRESH_DELAY_MS = 5_000;
+
+// Crossfades between the two spots `usersActions` can appear in — visible
+// fades in only once the other spot is mostly done fading out
+function ActionsSlot({ visible, children }: { visible: boolean; children: ReactNode }) {
+  return (
+    <div
+      className={`transition-opacity duration-200 ${
+        visible ? "opacity-100 delay-150" : "pointer-events-none opacity-0"
+      }`}
+    >
+      {children}
+    </div>
+  );
+}
 
 // Admin dashboard: site figures, server status, account management
 export default function Admin() {
@@ -73,7 +87,9 @@ export default function Admin() {
           !entry.isIntersecting && entry.boundingClientRect.top < (entry.rootBounds?.top ?? 0);
         setActionsInHeader(scrolledPastTop);
       },
-      { root, threshold: 0 },
+      // Grows the root 24px past the top, so the swap fires 24px late —
+      // only once the title has been fully hidden for a bit, not right at the edge
+      { root, threshold: 0, rootMargin: "24px 0px 0px 0px" },
     );
     observer.observe(target);
     return () => observer.disconnect();
@@ -107,8 +123,9 @@ export default function Admin() {
     fetchUsers();
   };
 
-  // Shared between the "Comptes" title and the page header — only one
-  // shows it at a time (see the IntersectionObserver above)
+  // Shared between the "Comptes" title and the page header — both stay
+  // mounted at all times (see ActionsSlot below) so the swap can crossfade
+  // instead of snapping, and only one is ever interactive at a time.
   const usersActions = (
     <div className="flex items-center gap-2">
       <Button
@@ -137,7 +154,7 @@ export default function Admin() {
         <PageHeader
           eyebrow="Administration"
           title="Dashboard"
-          action={actionsInHeader ? usersActions : undefined}
+          action={<ActionsSlot visible={actionsInHeader}>{usersActions}</ActionsSlot>}
         />
         <div className="h-px shrink-0 bg-border" />
 
@@ -158,7 +175,7 @@ export default function Admin() {
             loading={loading}
             onRefresh={fetchUsers}
             titleRef={usersTitleRef}
-            actions={actionsInHeader ? undefined : usersActions}
+            actions={<ActionsSlot visible={!actionsInHeader}>{usersActions}</ActionsSlot>}
             selectedJobId={selectedJobId}
             onSelectJob={setSelectedJobId}
             onJobDeleted={(id) => {
