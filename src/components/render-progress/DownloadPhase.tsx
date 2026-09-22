@@ -8,12 +8,14 @@ function ClipRow({
   clip,
   timing,
   now,
-  isCancelled,
+  stopped,
 }: {
   clip: ClipRenderData;
   timing: ClipTiming | undefined;
   now: number;
-  isCancelled: boolean;
+  // Cancelled or failed — either way the clip isn't actively progressing
+  // anymore, so it shouldn't keep showing a spinner/clock.
+  stopped: boolean;
 }) {
   const isTiming = timing && (timing.end ?? (clip.status === "downloading" ? now : null));
   const elapsed = isTiming ? formatElapsed((timing!.end ?? now) - timing!.start) : null;
@@ -22,13 +24,13 @@ function ClipRow({
     <div className="flex items-center gap-2.5">
       {clip.status === "done" && <CheckIcon className="size-3.5 shrink-0 text-green-500" />}
       {clip.status === "downloading" &&
-        (isCancelled ? (
+        (stopped ? (
           <XIcon className="size-3.5 shrink-0 text-destructive" />
         ) : (
           <LoaderIcon className="size-3.5 shrink-0 animate-spin text-violet-500 dark:text-violet-400" />
         ))}
       {clip.status === "pending" &&
-        (isCancelled ? (
+        (stopped ? (
           <XIcon className="size-3.5 shrink-0 text-destructive" />
         ) : (
           <ClockIcon className="size-3.5 shrink-0 text-muted-foreground/50" />
@@ -52,6 +54,7 @@ export default function DownloadPhase({
   elapsed,
   isDownloading,
   isCancelled,
+  isFailed,
   hasStartedProcessing,
 }: {
   clips: ClipRenderData[] | undefined;
@@ -60,16 +63,22 @@ export default function DownloadPhase({
   elapsed: number | null;
   isDownloading: boolean;
   isCancelled: boolean;
+  isFailed: boolean;
   hasStartedProcessing: boolean;
 }) {
+  // A failure during assembly still leaves the download phase genuinely done;
+  // a failure during download itself means it never actually finished.
+  const stopped = isCancelled || isFailed;
+
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-border p-4">
       <PhaseHeader
         label="Téléchargement"
         elapsed={elapsed !== null ? formatElapsed(elapsed) : null}
-        done={(!isDownloading && !isCancelled) || hasStartedProcessing}
-        running={isDownloading && !isCancelled}
+        done={(!isDownloading && !stopped) || hasStartedProcessing}
+        running={isDownloading && !stopped}
         cancelled={isCancelled && !hasStartedProcessing}
+        failed={isFailed && !hasStartedProcessing}
       />
 
       {clips && clips.length > 0 && (
@@ -80,7 +89,7 @@ export default function DownloadPhase({
               clip={clip}
               timing={clipTimers[clip.id]}
               now={now}
-              isCancelled={isCancelled}
+              stopped={stopped}
             />
           ))}
         </div>

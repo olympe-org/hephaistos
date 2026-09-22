@@ -90,6 +90,7 @@ export default function RenderProgress() {
           elapsed={timeline.downloadElapsed}
           isDownloading={job.status === "downloading"}
           isCancelled={isCancelled}
+          isFailed={isFailed}
           hasStartedProcessing={!!timeline.processingAt}
         />
       )}
@@ -103,6 +104,7 @@ export default function RenderProgress() {
             done={isDone}
             running={isProcessing}
             cancelled={isCancelled && !timeline.doneAt}
+            failed={isFailed}
           />
         </div>
       )}

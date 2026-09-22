@@ -7,12 +7,14 @@ export default function PhaseHeader({
   done,
   running,
   cancelled,
+  failed,
 }: {
   label: string;
   elapsed: string | null;
   done: boolean;
   running: boolean;
   cancelled: boolean;
+  failed?: boolean;
 }) {
   return (
     <div className="flex items-center gap-2">
@@ -21,7 +23,7 @@ export default function PhaseHeader({
           <LoaderIcon className="size-3.5 shrink-0 animate-spin text-violet-500 dark:text-violet-400" />
         )}
         {done && <CheckIcon className="size-3.5 shrink-0 text-green-500" />}
-        {cancelled && <XIcon className="size-3.5 shrink-0 text-destructive" />}
+        {(cancelled || failed) && <XIcon className="size-3.5 shrink-0 text-destructive" />}
         <span className="text-sm font-medium">{label}</span>
       </div>
       {elapsed !== null && (
