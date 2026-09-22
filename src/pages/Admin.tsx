@@ -110,7 +110,10 @@ export default function Admin() {
               if (id === selectedJobId) setSelectedJobId(null);
             }}
             liveJobs={liveJobs}
-            onCancelJob={forgetJob}
+            onCancelJob={(id) => {
+              forgetJob(id);
+              fetchUsers();
+            }}
           />
         </div>
       </div>

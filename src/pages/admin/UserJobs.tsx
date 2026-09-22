@@ -92,7 +92,10 @@ export default function UserJobs({
                     className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
                     onClick={() =>
                       cancelRender(job.job_id)
-                        .then(() => onCancelJob(job.job_id))
+                        .then(() => {
+                          onCancelJob(job.job_id);
+                          toast.success("Rendu annulé.");
+                        })
                         .catch(() => toast.error("Erreur lors de l'annulation."))
                     }
                   >
