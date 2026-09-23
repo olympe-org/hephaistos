@@ -1,36 +1,30 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import FittedDuration from "@/components/FittedDuration";
 import LoginCard from "@/components/LoginCard";
 import TemplatePreview from "@/components/TemplatePreview";
 import { getPublicMetrics, type PublicMetrics } from "@/utils/api/render";
 import { templates } from "@/utils";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { CARD_SURFACE } from "@/lib/tokens";
-
-const fmt = (n: number) => new Intl.NumberFormat("fr-FR").format(n);
-const NBSP = String.fromCharCode(160);
-
-function formatDuration(seconds: number): string {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  if (h > 0) return `${fmt(h)}${NBSP}h`;
-  if (m > 0) return `${m}${NBSP}min${m > 1 ? "s" : ""}`;
-  return `${seconds}${NBSP}s`;
-}
+import { fmt, NBSP } from "./home/shared";
 
 export default function Login() {
   usePageMeta({
     title: "Connexion · Vexia",
-    description: "Connecte-toi à Vexia pour créer et gérer tes vidéos short-form.",
+    description:
+      "Connecte-toi à Vexia pour créer et gérer tes vidéos short-form.",
     path: "/login",
   });
 
   const [metrics, setMetrics] = useState<PublicMetrics | null>(null);
 
   useEffect(() => {
-    getPublicMetrics().then(setMetrics).catch(() => {});
+    getPublicMetrics()
+      .then(setMetrics)
+      .catch(() => {});
   }, []);
 
-  const stats = [
+  const stats: { value: ReactNode; label: string }[] = [
     {
       value: metrics ? fmt(metrics.total_videos_created) : "—",
       label: "vidéos créées",
@@ -40,7 +34,11 @@ export default function Login() {
       label: "clips utilisés",
     },
     {
-      value: metrics ? formatDuration(metrics.total_duration_seconds) : "—",
+      value: metrics ? (
+        <FittedDuration seconds={metrics.total_duration_seconds} />
+      ) : (
+        "—"
+      ),
       label: "de contenu",
     },
     {
@@ -71,16 +69,21 @@ export default function Login() {
           </p>
         </div>
 
-        <div className="relative my-8 flex flex-1 items-center justify-center gap-4 xl:gap-5">
+        <div className="no-scrollbar relative -mx-10 my-8 flex flex-1 items-center gap-4 overflow-x-auto px-10 xl:-mx-12 xl:gap-5 xl:px-12">
           {templates.map((t) => (
             <div
               key={t.label}
-              className="aspect-9/16 h-[clamp(200px,32vh,300px)] overflow-hidden rounded-[18px] bg-black shadow-[0_24px_60px_-20px_rgba(0,0,0,0.45)] ring-1 ring-black/10 dark:ring-white/10"
+              className="relative h-[clamp(200px,32vh,300px)] shrink-0 aspect-9/16"
             >
-              <TemplatePreview
-                mode="fake"
-                templateOverride={t.label}
-              />
+              <div className="size-full overflow-hidden rounded-[18px] bg-black shadow-[0_24px_60px_-20px_rgba(0,0,0,0.45)] ring-1 ring-black/10 dark:ring-white/10">
+                <TemplatePreview
+                  mode="fake"
+                  templateOverride={t.label}
+                />
+              </div>
+              <span className="absolute -bottom-2 -left-2 -rotate-3 rounded-full border border-neutral-950 bg-white px-2.5 py-1 text-[11px] font-bold tracking-wider text-neutral-950 uppercase shadow-sm">
+                {t.label}
+              </span>
             </div>
           ))}
         </div>

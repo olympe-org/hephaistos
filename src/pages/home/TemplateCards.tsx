@@ -10,14 +10,15 @@ const TEMPLATE_TITLES: Record<string, string> = {
   expanded: "Plein écran, impact maximal",
 };
 
-// The 4 templates as cards; only two are shown on mobile
+// The 4 templates as cards — hidden on mobile, where a cramped single card
+// per row wouldn't do them justice anyway
 export default function TemplateCards() {
   const wide = useMediaQuery("(min-width: 640px)");
-  const shown = wide ? templates : [templates[0], templates[3]];
+  if (!wide) return null;
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {shown.map((t) => (
+      {templates.map((t) => (
         <article
           key={t.label}
           className={`flex flex-col gap-6 p-6 ${CARD_SURFACE}`}
