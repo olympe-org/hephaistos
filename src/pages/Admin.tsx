@@ -5,6 +5,7 @@ import PageHeader from "@/components/PageHeader";
 import VideoPreviewPanel from "@/components/VideoPreviewPanel";
 import { Button } from "@/components/ui/button";
 import { useLiveJobs } from "@/hooks/useLiveJobs";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useVideoPreview } from "@/hooks/useVideoPreview";
 import {
@@ -35,7 +36,7 @@ function ActionsSlot({
 }) {
   return (
     <div
-      className={`transition-opacity duration-200 ${
+      className={`transition-opacity duration-100 ${
         visible ? "opacity-100 delay-150" : "pointer-events-none opacity-0"
       }`}
     >
@@ -114,6 +115,10 @@ export default function Admin() {
     setTimeout(fetchUsers, REFRESH_DELAY_MS),
   );
   const { videoUrl, loading: videoLoading } = useVideoPreview(selectedJobId);
+  const selectedOwner = users.find((u) =>
+    u.jobs.some((j) => j.id === selectedJobId),
+  );
+  const selectedJob = selectedOwner?.jobs.find((j) => j.id === selectedJobId);
 
   const saveMoney = async (value: number) => {
     await patchAdminMetrics({ money_earned: value });
@@ -134,44 +139,62 @@ export default function Admin() {
     fetchUsers();
   };
 
-  // Shared between the "Comptes" title and the page header — both stay
-  // mounted at all times (see ActionsSlot below) so the swap can crossfade
-  // instead of snapping, and only one is ever interactive at a time.
-  const usersActions = (
+  // Below 600px the header has no room for both buttons once they move up,
+  // so "Nouvel utilisateur" stays put in the "Comptes" section and only
+  // Refresh follows into the header.
+  const isCompact = !useMediaQuery("(min-width: 600px)");
+
+  const refreshButton = (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={fetchUsers}
+      disabled={loading}
+      className="size-9 rounded-full p-0"
+    >
+      <RefreshCwIcon className={`size-3.5 ${loading ? "animate-spin" : ""}`} />
+    </Button>
+  );
+  const createButton = (
+    <Button
+      size="sm"
+      onClick={() => setCreateOpen(true)}
+      className="h-9 gap-1.5 rounded-full px-4 text-sm"
+    >
+      <PlusIcon className="size-3.5" />
+      Nouvel utilisateur
+    </Button>
+  );
+  // "Comptes" section always shows both; the header spot (see ActionsSlot
+  // below) drops the create button on narrow screens.
+  const sectionActions = (
     <div className="flex items-center gap-2">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={fetchUsers}
-        disabled={loading}
-        className="size-9 rounded-full p-0"
-      >
-        <RefreshCwIcon
-          className={`size-3.5 ${loading ? "animate-spin" : ""}`}
-        />
-      </Button>
-      <Button
-        size="sm"
-        onClick={() => setCreateOpen(true)}
-        className="h-9 gap-1.5 rounded-full px-4 text-sm"
-      >
-        <PlusIcon className="size-3.5" />
-        Nouvel utilisateur
-      </Button>
+      {refreshButton}
+      {createButton}
+    </div>
+  );
+  const headerActions = (
+    <div className="flex items-center gap-2">
+      {refreshButton}
+      {!isCompact && createButton}
     </div>
   );
 
   return (
-    <section className="flex gap-10 px-6 lg:px-10">
+    <section className="flex gap-10 lg:px-10">
       <div className="flex h-[calc(100vh-var(--nav-h))] w-full flex-col">
-        <PageHeader
-          eyebrow="Administration"
-          title="Dashboard"
-          action={
-            <ActionsSlot visible={actionsInHeader}>{usersActions}</ActionsSlot>
-          }
-        />
-        <div className="h-px shrink-0 bg-border" />
+        <div className="px-6 lg:px-0">
+          <PageHeader
+            eyebrow="Administration"
+            title="Dashboard"
+            action={
+              <ActionsSlot visible={actionsInHeader}>
+                {headerActions}
+              </ActionsSlot>
+            }
+          />
+          <div className="h-px shrink-0 bg-border" />
+        </div>
 
         <div
           ref={scrollRef}
@@ -192,7 +215,7 @@ export default function Admin() {
             titleRef={usersTitleRef}
             actions={
               <ActionsSlot visible={!actionsInHeader}>
-                {usersActions}
+                {sectionActions}
               </ActionsSlot>
             }
             selectedJobId={selectedJobId}
@@ -213,6 +236,8 @@ export default function Admin() {
         jobId={selectedJobId}
         videoUrl={videoUrl}
         loading={videoLoading}
+        title={selectedJob?.title}
+        username={selectedOwner?.username}
       />
 
       <UserDialog

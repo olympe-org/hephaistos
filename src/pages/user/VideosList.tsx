@@ -27,13 +27,14 @@ export default function VideosList({
   ];
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 px-6 lg:px-0">
       <SectionTitle
         title="Vidéos"
         description="Tes rendus, du plus récent au plus ancien."
         action={
+          // Creating a render needs the desktop-only editor — hidden on mobile
           <Button
-            className="h-9 shrink-0 gap-1.5 rounded-full px-4"
+            className="hidden h-9 shrink-0 gap-1.5 rounded-full px-4 lg:inline-flex"
             onClick={onCreate}
           >
             Créer une vidéo

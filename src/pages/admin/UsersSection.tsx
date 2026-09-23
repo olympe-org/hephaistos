@@ -32,12 +32,13 @@ export default function UsersSection({
   onCancelJob: (jobId: string) => void;
 }) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 px-6 lg:px-0">
       <div ref={titleRef}>
         <SectionTitle
           title="Comptes"
           description={`${users.length} utilisateur${users.length !== 1 ? "s" : ""}`}
           action={actions}
+          stackActionsBelow
         />
       </div>
 

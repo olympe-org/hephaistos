@@ -41,6 +41,7 @@ export default function UserPage() {
   const activeJobIds = me?.active_jobs.map((j) => j.job_id) ?? [];
   const { liveJobs } = useLiveJobs(activeJobIds, refreshMe);
   const { videoUrl, loading: videoLoading } = useVideoPreview(selectedJobId);
+  const selectedJob = me?.done_jobs.find((j) => j.job_id === selectedJobId);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -56,24 +57,26 @@ export default function UserPage() {
     );
 
   return (
-    <section className="flex gap-10 px-6 lg:px-10">
+    <section className="flex gap-10 lg:px-10">
       <div className="flex h-[calc(100vh-var(--nav-h))] w-full flex-col">
-        <PageHeader
-          eyebrow="Profil"
-          title={me?.username ?? storeUsername ?? "—"}
-          badge={me?.is_admin && <AdminBadge />}
-          action={
-            <Button
-              variant="outline"
-              className="mt-1 h-9 shrink-0 gap-1.5 rounded-full px-4"
-              onClick={handleLogout}
-            >
-              <LogOutIcon className="size-3.5" />
-              Se déconnecter
-            </Button>
-          }
-        />
-        <div className="h-px shrink-0 bg-border" />
+        <div className="px-6 lg:px-0">
+          <PageHeader
+            eyebrow="Profil"
+            title={me?.username ?? storeUsername ?? "—"}
+            badge={me?.is_admin && <AdminBadge />}
+            action={
+              <Button
+                variant="outline"
+                className="mt-1 h-9 shrink-0 gap-1.5 rounded-full px-4"
+                onClick={handleLogout}
+              >
+                <LogOutIcon className="size-3.5" />
+                Se déconnecter
+              </Button>
+            }
+          />
+          <div className="h-px shrink-0 bg-border" />
+        </div>
 
         <div className="no-scrollbar flex flex-1 flex-col gap-10 overflow-x-hidden overflow-y-auto py-8">
           <ActivityStats me={me} />
@@ -93,6 +96,7 @@ export default function UserPage() {
         jobId={selectedJobId}
         videoUrl={videoUrl}
         loading={videoLoading}
+        title={selectedJob?.title}
       />
     </section>
   );

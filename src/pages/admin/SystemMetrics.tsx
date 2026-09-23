@@ -1,4 +1,5 @@
 import { ActivityIcon, CpuIcon, HardDriveIcon, MemoryStickIcon } from "lucide-react";
+import CarouselRow, { CAROUSEL_ITEM } from "@/components/CarouselRow";
 import SectionTitle from "@/components/SectionTitle";
 import { formatBytes } from "@/lib/format";
 import type { SystemMetrics as SystemMetricsData } from "@/utils/api/admin";
@@ -14,11 +15,13 @@ export default function SystemMetrics({
 }) {
   return (
     <div className="flex flex-col gap-4">
-      <SectionTitle
-        title="Système"
-        description="État du serveur, actualisé toutes les 5 secondes."
-      />
-      <div className="grid grid-cols-4 gap-3">
+      <div className="px-6 lg:px-0">
+        <SectionTitle
+          title="Système"
+          description="État du serveur, actualisé toutes les 5 secondes."
+        />
+      </div>
+      <CarouselRow gridClassName="lg:grid-cols-2 min-[1220px]:grid-cols-4!">
         {metrics ? (
           <>
             <MetricCard
@@ -27,6 +30,7 @@ export default function SystemMetrics({
               value={`${metrics.cpu_percent.toFixed(1)}%`}
               sub="/ 100%"
               percent={metrics.cpu_percent}
+              className={CAROUSEL_ITEM}
             />
             <MetricCard
               Icon={MemoryStickIcon}
@@ -34,6 +38,7 @@ export default function SystemMetrics({
               value={`${metrics.ram.used_gb.toFixed(1)} Go`}
               sub={`/ ${metrics.ram.total_gb.toFixed(1)} Go`}
               percent={metrics.ram.percent}
+              className={CAROUSEL_ITEM}
             />
             <MetricCard
               Icon={HardDriveIcon}
@@ -41,18 +46,20 @@ export default function SystemMetrics({
               value={`${metrics.disk.used_gb.toFixed(1)} Go`}
               sub={`${metrics.disk.free_gb.toFixed(1)} Go libre`}
               percent={metrics.disk.percent}
+              className={CAROUSEL_ITEM}
             />
             <MetricCard
               Icon={ActivityIcon}
               label="Réseau"
               value={`↑ ${formatBytes(netRate.sent)}/s`}
               sub={`↓ ${formatBytes(netRate.recv)}/s`}
+              className={CAROUSEL_ITEM}
             />
           </>
         ) : (
-          <MetricSkeletons />
+          <MetricSkeletons className={CAROUSEL_ITEM} />
         )}
-      </div>
+      </CarouselRow>
     </div>
   );
 }

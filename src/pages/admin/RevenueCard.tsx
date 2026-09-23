@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 export default function RevenueCard({
   value,
   onSave,
+  className = "",
 }: {
   value: number;
   onSave: (value: number) => Promise<void>;
+  className?: string;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
@@ -35,7 +37,9 @@ export default function RevenueCard({
   };
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-border bg-muted/30 p-5">
+    <div
+      className={`flex flex-col gap-3 rounded-2xl border border-border bg-muted/30 p-5 ${className}`}
+    >
       <div className="flex items-center justify-between text-muted-foreground">
         <div className="flex items-center gap-2">
           <BanknoteIcon className="size-4" />
@@ -91,7 +95,7 @@ export default function RevenueCard({
         </div>
       ) : (
         <span className="text-3xl font-semibold leading-none tracking-[-0.03em] tabular-nums">
-          {value.toFixed(2)} €
+          {Math.round(value)} €
         </span>
       )}
     </div>
