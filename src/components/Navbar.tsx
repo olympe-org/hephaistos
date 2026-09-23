@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { MoonIcon, SunIcon, UserIcon } from "lucide-react";
+import {
+  ClapperboardIcon,
+  MoonIcon,
+  ShieldCheckIcon,
+  SunIcon,
+  UserIcon,
+} from "lucide-react";
 import { useAppSelector } from "@/store";
 import { useTheme } from "@/utils/useTheme";
 
@@ -71,7 +77,7 @@ export default function Navbar({
       </NavLink>
 
       {/* Nav links */}
-      <nav className={`ml-8 hidden items-center gap-2 lg:flex ${ENTER}`}>
+      <nav className={`ml-8 hidden items-center gap-2 sm:flex ${ENTER}`}>
         <NavLink
           to="/"
           end
@@ -97,11 +103,59 @@ export default function Navbar({
 
       {/* Actions */}
       <div className={`ml-auto flex items-center gap-2 ${ENTER}`}>
+        {/* Below 640px the text nav/profile button above are hidden, so
+            these icons take over — shown only when logged in (the "Se
+            connecter" button already covers logged-out visitors). */}
+        <div className="flex items-center gap-2 sm:hidden">
+          {token && (
+            <button
+              type="button"
+              onClick={() => navigate("/create-video")}
+              aria-label="Créer une vidéo"
+              className={`inline-flex size-9 items-center justify-center rounded-full border transition-colors duration-300 ${
+                location.pathname === "/create-video"
+                  ? "border-foreground/20 bg-muted text-foreground"
+                  : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+              }`}
+            >
+              <ClapperboardIcon className="size-3.5" />
+            </button>
+          )}
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => navigate("/admin")}
+              aria-label="Administration"
+              className={`inline-flex size-9 items-center justify-center rounded-full border transition-colors duration-300 ${
+                location.pathname === "/admin"
+                  ? "border-foreground/20 bg-muted text-foreground"
+                  : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+              }`}
+            >
+              <ShieldCheckIcon className="size-3.5" />
+            </button>
+          )}
+          {token && (
+            <button
+              type="button"
+              onClick={() => navigate("/user")}
+              aria-label="Profil"
+              className={`inline-flex size-9 items-center justify-center rounded-full border transition-colors duration-300 ${
+                location.pathname === "/user"
+                  ? "border-foreground/20 bg-muted text-foreground"
+                  : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+              }`}
+            >
+              <UserIcon className="size-3.5" />
+            </button>
+          )}
+        </div>
+
         {token ? (
           <button
             type="button"
             onClick={() => navigate("/user")}
-            className={`hidden h-9 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium transition-colors duration-300 lg:inline-flex ${
+            className={`hidden h-9 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium transition-colors duration-300 sm:inline-flex ${
               location.pathname === "/user"
                 ? "border-foreground/20 bg-muted text-foreground"
                 : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"

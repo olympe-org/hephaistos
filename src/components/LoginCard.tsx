@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LoaderIcon,
+  ArrowLeftIcon,
   ArrowRightIcon,
   EyeIcon,
   EyeOffIcon,
@@ -38,7 +39,7 @@ export default function LoginCard() {
       dispatch(loginSuccess({ token: access_token, username }));
       const me = await getMe(access_token);
       dispatch(setUserData({ username: me.username, isAdmin: me.is_admin, features: me.features, maxJobs: me.max_jobs }));
-      navigate("/create-video");
+      navigate("/user");
     } catch (err: unknown) {
       const detail = (err as { detail?: { detail?: string; message?: string } })?.detail;
       const msg = detail?.detail ?? detail?.message ?? "Identifiants incorrects.";
@@ -56,6 +57,17 @@ export default function LoginCard() {
 
   return (
     <div className="mx-auto flex w-full max-w-sm flex-col gap-8">
+      {/* Back to home — the two-column layout already gives desktop a way
+          out, so this is mobile-only */}
+      <button
+        type="button"
+        onClick={() => navigate("/")}
+        aria-label="Retour à l'accueil"
+        className="inline-flex size-9 items-center justify-center self-start rounded-full border border-border text-muted-foreground transition-colors duration-300 hover:border-foreground hover:bg-foreground hover:text-background lg:hidden"
+      >
+        <ArrowLeftIcon className="size-3.5" />
+      </button>
+
       {/* Header */}
       <div className="flex flex-col gap-2">
         <h1 className="text-[2rem] font-semibold leading-none tracking-[-0.03em]">
@@ -144,10 +156,10 @@ export default function LoginCard() {
         <button
           type="button"
           onClick={handleCopyEmail}
-          className="group flex items-center justify-between rounded-xl border border-border bg-muted/40 px-3.5 py-2.5 text-sm transition-colors hover:bg-muted/70"
+          className="group flex items-center gap-2 rounded-xl border border-border bg-muted/40 px-3.5 py-2.5 text-sm transition-colors hover:bg-muted/70"
         >
-          <span className="font-medium">{CONTACT_EMAIL}</span>
-          <span className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
+          <span className="min-w-0 truncate font-medium">{CONTACT_EMAIL}</span>
+          <span className="ml-auto flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
             {copied ? (
               <>
                 <CheckIcon className="size-3.5 text-green-500" />
