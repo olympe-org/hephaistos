@@ -1,18 +1,12 @@
-import { useState } from "react";
-import { MailIcon, PencilIcon, ShieldOffIcon, TrashIcon } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { ChevronDownIcon, MailIcon, PencilIcon, ShieldOffIcon, TrashIcon } from "lucide-react";
 import { toast } from "sonner";
+import ActionsDialog from "@/components/ActionsDialog";
 import AdminBadge from "@/components/AdminBadge";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import FeatureBadge from "@/components/FeatureBadge";
-import IconAction from "@/components/IconAction";
+import FittedDuration from "@/components/FittedDuration";
 import QrDialog from "@/components/QrDialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { formatDuration } from "@/lib/format";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setUserData } from "@/store/authSlice";
 import type { RenderJob } from "@/store/renderSlice";
@@ -51,6 +45,8 @@ export default function UserRow({
   const currentUsername = useAppSelector((s) => s.auth.username);
   const isSelf = user.username === currentUsername;
 
+  const [expanded, setExpanded] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [confirm, setConfirm] = useState<"revoke" | "delete" | null>(null);
   const [jobToDelete, setJobToDelete] = useState<JobRef | null>(null);
@@ -107,135 +103,147 @@ export default function UserRow({
     onAction();
   };
 
-  const stats = [
+  const stats: { label: string; value: ReactNode }[] = [
     { label: "Vidéos", value: String(user.total_videos_created) },
     { label: "Clips", value: String(user.total_clips_used) },
-    { label: "Contenu", value: formatDuration(user.total_duration_seconds) },
+    {
+      label: "Contenu",
+      value: <FittedDuration seconds={user.total_duration_seconds} />,
+    },
   ];
 
   return (
     <>
-      <div className="flex flex-col gap-5 rounded-2xl border border-border bg-background p-5 transition-colors duration-200 hover:border-foreground/25">
-        {/* Identity + actions */}
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex min-w-0 items-start gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold uppercase">
-              {user.username.slice(0, 1)}
+      <div className="flex flex-col rounded-2xl border border-border bg-background p-5 transition-colors duration-200 hover:border-foreground/25">
+        {/* Identity — click to expand/collapse the card below; the avatar
+            itself opens the edit/revoke/delete actions dialog instead */}
+        <div
+          role="button"
+          tabIndex={0}
+          aria-expanded={expanded}
+          onClick={() => setExpanded((v) => !v)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setExpanded((v) => !v);
+            }
+          }}
+          className="flex min-w-0 cursor-pointer items-start gap-3"
+        >
+          <button
+            type="button"
+            aria-label="Actions sur le compte"
+            onClick={(e) => {
+              e.stopPropagation();
+              setActionsOpen(true);
+            }}
+            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold uppercase transition-colors hover:bg-muted-foreground/20"
+          >
+            {user.username.slice(0, 1)}
+          </button>
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-base font-semibold tracking-tight">
+                {user.username}
+              </span>
+              {user.is_admin && <AdminBadge />}
+              {user.features.map((f) => (
+                <FeatureBadge
+                  key={f}
+                  label={f}
+                />
+              ))}
             </div>
-            <div className="flex min-w-0 flex-col gap-1.5">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-base font-semibold tracking-tight">
-                  {user.username}
-                </span>
-                {user.is_admin && <AdminBadge />}
-                {user.features.map((f) => (
-                  <FeatureBadge
-                    key={f}
-                    label={f}
-                  />
-                ))}
-              </div>
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                {user.email && (
-                  <>
-                    <span className="flex items-center gap-1">
-                      <MailIcon className="size-3 shrink-0" />
-                      {user.email}
-                    </span>
-                    <span aria-hidden>·</span>
-                  </>
-                )}
-                <span>
-                  Créé le{" "}
-                  {new Date(user.created_at).toLocaleDateString("fr-FR", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </span>
-                <span aria-hidden>·</span>
-                <span>
-                  max {user.max_jobs} job{user.max_jobs > 1 ? "s" : ""}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <TooltipProvider>
-            <div className="flex shrink-0 items-center gap-1.5">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <IconAction
-                    aria-label="Modifier"
-                    onClick={() => setEditOpen(true)}
-                  >
-                    <PencilIcon />
-                  </IconAction>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">Modifier</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <IconAction
-                    aria-label="Révoquer les tokens"
-                    onClick={() => setConfirm("revoke")}
-                  >
-                    <ShieldOffIcon />
-                  </IconAction>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  Révoquer les tokens
-                </TooltipContent>
-              </Tooltip>
-              {!isSelf && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <IconAction
-                      danger
-                      aria-label="Supprimer l'utilisateur"
-                      onClick={() => setConfirm("delete")}
-                    >
-                      <TrashIcon />
-                    </IconAction>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    Supprimer l'utilisateur
-                  </TooltipContent>
-                </Tooltip>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+              {user.email && (
+                <>
+                  <span className="flex items-center gap-1">
+                    <MailIcon className="size-3 shrink-0" />
+                    {user.email}
+                  </span>
+                  <span aria-hidden>·</span>
+                </>
               )}
-            </div>
-          </TooltipProvider>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
-          {stats.map(({ label, value }) => (
-            <div
-              key={label}
-              className="flex flex-col gap-1 rounded-xl bg-muted/40 px-3.5 py-3"
-            >
-              <span className="text-xs text-muted-foreground">{label}</span>
-              <span className="text-lg font-semibold leading-none tracking-tight tabular-nums">
-                {value}
+              <span>
+                Créé le{" "}
+                {new Date(user.created_at).toLocaleDateString("fr-FR", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </span>
+              <span aria-hidden>·</span>
+              <span>
+                max {user.max_jobs} job{user.max_jobs > 1 ? "s" : ""}
               </span>
             </div>
-          ))}
+          </div>
+          <ChevronDownIcon
+            className={`mt-1 size-4 shrink-0 text-muted-foreground transition-transform duration-300 ${
+              expanded ? "rotate-180" : ""
+            }`}
+          />
         </div>
 
-        <UserJobs
-          user={user}
-          liveJobs={liveJobs}
-          selectedJobId={selectedJobId}
-          onSelectJob={onSelectJob}
-          onCancelJob={onCancelJob}
-          onShowQr={(job) => {
-            setQrJob(job);
-            setQrOpen(true);
-          }}
-          onDeleteJob={setJobToDelete}
-        />
+        {/* Stats + renders — smoothly unrolls via the grid-rows trick
+            (0fr -> 1fr), no JS height measurement needed */}
+        <div
+          className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+            expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+          }`}
+        >
+          <div className="flex flex-col gap-5 overflow-hidden">
+            <div className="grid grid-cols-1 gap-3 pt-5 min-[420px]:grid-cols-3">
+              {stats.map(({ label, value }) => (
+                <div
+                  key={label}
+                  className="flex flex-col gap-1 rounded-xl bg-muted/40 px-3.5 py-3"
+                >
+                  <span className="text-xs text-muted-foreground">
+                    {label}
+                  </span>
+                  <span className="text-lg font-semibold leading-none tracking-tight tabular-nums">
+                    {value}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <UserJobs
+              user={user}
+              liveJobs={liveJobs}
+              selectedJobId={selectedJobId}
+              onSelectJob={onSelectJob}
+              onCancelJob={onCancelJob}
+              onShowQr={(job) => {
+                setQrJob(job);
+                setQrOpen(true);
+              }}
+              onDeleteJob={setJobToDelete}
+            />
+          </div>
+        </div>
       </div>
 
+      <ActionsDialog
+        open={actionsOpen}
+        onClose={() => setActionsOpen(false)}
+        subtitle={user.username}
+        actions={[
+          { label: "Modifier", Icon: PencilIcon, onClick: () => setEditOpen(true) },
+          { label: "Révoquer les tokens", Icon: ShieldOffIcon, onClick: () => setConfirm("revoke") },
+          ...(isSelf
+            ? []
+            : [
+                {
+                  label: "Supprimer l'utilisateur",
+                  Icon: TrashIcon,
+                  danger: true,
+                  onClick: () => setConfirm("delete"),
+                },
+              ]),
+        ]}
+      />
       <UserDialog
         open={editOpen}
         onClose={() => setEditOpen(false)}
@@ -279,6 +287,7 @@ export default function UserRow({
         onClose={() => setQrOpen(false)}
         jobId={qrJob?.id ?? ""}
         title={qrJob?.title ?? ""}
+        username={user.username}
       />
     </>
   );
