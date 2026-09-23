@@ -1,4 +1,4 @@
-import { SearchIcon, XIcon } from "lucide-react";
+import { LoaderIcon, SearchIcon, XIcon } from "lucide-react";
 import IconAction from "./IconAction";
 import { Input } from "./ui/input";
 import VideoResultItem, { type VideoResult } from "./VideoResultItem";
@@ -53,7 +53,7 @@ export default function VideoSearchPanel({
           disabled={loading}
           tabIndex={-1}
         >
-          <SearchIcon />
+          {loading ? <LoaderIcon className="animate-spin" /> : <SearchIcon />}
         </IconAction>
       </div>
 
@@ -67,18 +67,26 @@ export default function VideoSearchPanel({
         className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto"
         tabIndex={-1}
       >
-        {results.map((video) => (
-          <VideoResultItem
-            key={video.videoId}
-            video={video}
-            selected={selectedId === video.videoId}
-            onSelect={() => onSelect(video)}
-          />
-        ))}
-        {results.length === 0 && !loading && (
-          <p className="py-10 text-center text-sm text-muted-foreground">
-            Aucun résultat
-          </p>
+        {loading ? (
+          <div className="flex flex-1 items-center justify-center py-10">
+            <LoaderIcon className="size-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <>
+            {results.map((video) => (
+              <VideoResultItem
+                key={video.videoId}
+                video={video}
+                selected={selectedId === video.videoId}
+                onSelect={() => onSelect(video)}
+              />
+            ))}
+            {results.length === 0 && (
+              <p className="py-10 text-center text-sm text-muted-foreground">
+                Aucun résultat
+              </p>
+            )}
+          </>
         )}
       </div>
     </div>

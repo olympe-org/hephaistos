@@ -197,7 +197,14 @@ export default function VideoPickerDialog({
 
   useEffect(() => {
     if (open) {
-      setUrl(initial.url);
+      // A prior selection survives closing the dialog (nothing clears
+      // `selected`) — keep showing its URL instead of reverting to the
+      // clip's original one.
+      setUrl(
+        selected
+          ? `https://www.youtube.com/watch?v=${selected.videoId}`
+          : initial.url,
+      );
       setStart(initial.start);
       setDuration(initial.duration);
     } else {
