@@ -68,7 +68,9 @@ export default function Layout() {
           </Button>
         </div>
       )}
-      {pathname !== "/" && <MobileGuard />}
+      {/* Only the editor needs real screen space — every other page has its
+          own mobile layout. */}
+      {pathname === "/create-video" && <MobileGuard />}
       <Navbar
         showBanner={showBanner}
         bannerIn={bannerIn}

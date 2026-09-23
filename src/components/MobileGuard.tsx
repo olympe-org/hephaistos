@@ -1,56 +1,32 @@
-import { MonitorIcon, ArrowLeftIcon } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ArrowLeftIcon } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 
+// The editor UI needs real screen space (multi-column layouts, dense
+// controls), so this overlay blocks anything below "lg". Same badge/heading/
+// button language as the 404 page, for consistency across every state page.
 export default function MobileGuard() {
-  const navigate = useNavigate();
   return (
-    <div className="fixed inset-0 z-60 flex flex-col items-center justify-center bg-background px-8 text-center overflow-hidden lg:hidden">
+    <div className="fixed inset-0 z-60 flex flex-col items-center justify-center bg-background px-6 text-center lg:hidden">
+      <span className="mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground">
+        <span className="size-1.5 rounded-full bg-violet-400" />
+        Écran trop petit
+      </span>
 
-      {/* Background orbs */}
-      <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full bg-violet-600 blur-[120px] opacity-20" />
-      <div className="pointer-events-none absolute bottom-0 right-0 w-56 h-56 rounded-full bg-blue-600 blur-[100px] opacity-15" />
+      <h1 className="text-[clamp(1.75rem,7vw,2.75rem)] font-semibold leading-[1.15] tracking-[-0.03em] text-balance">
+        Vexia Studio est fait pour{" "}
+        <span className="text-violet-500 dark:text-violet-400">un grand écran</span>.
+      </h1>
+      <p className="mt-6 max-w-xs text-sm leading-relaxed text-muted-foreground">
+        Reviens depuis un ordinateur (écran ≥ 1024px) pour accéder à toutes les fonctionnalités.
+      </p>
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col items-center gap-6 max-w-xs">
-
-        {/* Icon */}
-        <div className="size-16 rounded-2xl bg-violet-400/10 border border-violet-400/20 flex items-center justify-center">
-          <MonitorIcon className="size-7 text-violet-400" />
-        </div>
-
-        {/* Text */}
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-bold tracking-[0.2em] text-violet-400 uppercase">
-              Vexia Studio
-            </span>
-            <h1
-              className="font-black uppercase tracking-tighter leading-[0.92]"
-              style={{ fontSize: "clamp(2.2rem, 9vw, 3rem)" }}
-            >
-              Écran trop<br />
-              <span className="text-violet-400">petit.</span>
-            </h1>
-          </div>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Vexia Studio est conçu pour les grands écrans.
-            Reviens depuis un ordinateur pour accéder à toutes les fonctionnalités.
-          </p>
-        </div>
-
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-4 py-2 text-xs font-semibold text-muted-foreground">
-          <span className="size-1.5 rounded-full bg-amber-400 animate-pulse" />
-          Disponible sur écran ≥ 1024px
-        </div>
-
-        <Button variant="outline" onClick={() => navigate("/")}>
-          <ArrowLeftIcon className="size-3.5" />
+      <Button asChild className="mt-9 h-12 rounded-full px-7 text-[15px]">
+        <Link to="/">
+          <ArrowLeftIcon className="size-4" />
           Retour à l'accueil
-        </Button>
-
-      </div>
+        </Link>
+      </Button>
     </div>
   );
 }
