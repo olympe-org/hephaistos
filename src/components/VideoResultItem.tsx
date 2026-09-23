@@ -1,13 +1,14 @@
+// Matches Invidious's search response shape — used as the reference format
+// for both search sources (Invidious for guests, our yt-dlp proxy for
+// logged-in users), so the frontend parses either one identically.
 export interface VideoResult {
   type: string;
   videoId: string;
   title: string;
   author: string;
-  authorVerified: boolean;
   lengthSeconds: number;
-  viewCountText: string;
-  publishedText: string;
-  videoThumbnails: { url: string; quality: string }[];
+  authorVerified?: boolean;
+  viewCountText?: string;
 }
 
 function thumbnail(videoId: string) {
@@ -58,7 +59,9 @@ export default function VideoResultItem({
           {video.author}
           {video.authorVerified && <span className="ml-1">✓</span>}
         </p>
-        <p className="text-xs text-muted-foreground">{video.viewCountText}</p>
+        {video.viewCountText && (
+          <p className="text-xs text-muted-foreground">{video.viewCountText}</p>
+        )}
       </div>
     </button>
   );

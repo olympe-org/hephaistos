@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
-import { useAppDispatch } from "@/store";
+import { useAppDispatch, useAppSelector } from "@/store";
 import { setAllDurations } from "@/store/createVideoSlice";
+import { searchInvidious, searchYoutube } from "@/utils/api/youtube";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent } from "./ui/dialog";
 import VideoSearchPanel from "./VideoSearchPanel";
@@ -35,8 +36,6 @@ function loadYTScript() {
   s.src = "https://www.youtube.com/iframe_api";
   document.head.appendChild(s);
 }
-
-const INVIDIOUS_URL = import.meta.env.VITE_INVIDIOUS_URL ?? "https://inv.nadeko.net";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -87,6 +86,7 @@ export default function VideoPickerDialog({
   onConfirm: (selection: VideoSelection) => void;
 }) {
   const dispatch = useAppDispatch();
+  const token = useAppSelector((s) => s.auth.token);
 
   const [query, setQuery] = useState(() => {
     const base = stripStreams(initialTitle);
@@ -206,23 +206,30 @@ export default function VideoPickerDialog({
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Search ─────────────────────────────────────────────────────────────────
+  // Logged in: our own yt-dlp-backed proxy (no CORS/instance-uptime risk).
+  // Logged out: the public Invidious instance — good enough for a quick
+  // preview search, and doesn't need auth.
+
+  // Guards against overlapping searches (e.g. spamming Enter) — each one
+  // spins up a real yt-dlp process server-side, not a cheap DB query.
+  const isSearchingRef = useRef(false);
 
   const handleSearch = async () => {
-    if (!query.trim()) return;
+    if (!query.trim() || isSearchingRef.current) return;
+    isSearchingRef.current = true;
     setLoading(true);
     setError("");
 
     try {
-      const res = await fetch(
-        `${INVIDIOUS_URL}/api/v1/search?q=${encodeURIComponent(query)}&type=video&region=US`,
-      );
-      if (!res.ok) throw new Error(`${res.status}`);
-      const data: VideoResult[] = await res.json();
+      const data = token
+        ? await searchYoutube(query, 10)
+        : await searchInvidious(query);
       setResults(data.filter((r) => r.type === "video").slice(0, 10));
     } catch {
       setError("Recherche indisponible. Réessaie plus tard.");
       setResults([]);
     } finally {
+      isSearchingRef.current = false;
       setLoading(false);
     }
   };
