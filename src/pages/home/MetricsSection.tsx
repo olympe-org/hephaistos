@@ -1,6 +1,8 @@
+import type { ReactNode } from "react";
 import FadeIn from "@/components/FadeIn";
+import FittedDuration from "@/components/FittedDuration";
 import type { PublicMetrics } from "@/utils/api/render";
-import { CONTAINER, NBSP, fmt, formatDuration } from "./shared";
+import { CONTAINER, NBSP, fmt } from "./shared";
 
 // Key figures for the service, loaded by the page (dashes until they respond)
 export default function MetricsSection({
@@ -8,7 +10,7 @@ export default function MetricsSection({
 }: {
   metrics: PublicMetrics | null;
 }) {
-  const items = [
+  const items: { value: ReactNode; label: string }[] = [
     {
       value: metrics ? fmt(metrics.total_videos_created) : "—",
       label: "vidéos créées",
@@ -18,7 +20,11 @@ export default function MetricsSection({
       label: "clips utilisés",
     },
     {
-      value: metrics ? formatDuration(metrics.total_duration_seconds) : "—",
+      value: metrics ? (
+        <FittedDuration seconds={metrics.total_duration_seconds} />
+      ) : (
+        "—"
+      ),
       label: "de contenu",
     },
     {
@@ -36,7 +42,10 @@ export default function MetricsSection({
               key={label}
               className="flex flex-col items-center gap-3 text-center"
             >
-              <span className="text-[clamp(2.5rem,5vw,4.5rem)] font-semibold leading-none tracking-[-0.04em] tabular-nums">
+              {/* block + w-full: items-center would otherwise shrink this to
+                  its own content, leaving FittedDuration nothing real to
+                  measure against */}
+              <span className="block w-full text-[clamp(2.5rem,5vw,4.5rem)] font-semibold leading-none tracking-[-0.04em] tabular-nums">
                 {value}
               </span>
               <span className="text-sm text-muted-foreground lg:text-base">

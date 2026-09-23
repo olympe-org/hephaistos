@@ -1,4 +1,4 @@
-import type { ElementType } from "react";
+import type { ElementType, ReactNode } from "react";
 
 // Key-figure card: icon + label, value, optional sub-value and progress bar
 export default function MetricCard({
@@ -7,15 +7,19 @@ export default function MetricCard({
   value,
   sub,
   percent,
+  className = "",
 }: {
   Icon: ElementType;
   label: string;
-  value: string;
+  value: ReactNode;
   sub?: string;
   percent?: number;
+  className?: string;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-border bg-muted/30 p-5">
+    <div
+      className={`flex flex-col gap-3 rounded-2xl border border-border bg-muted/30 p-5 ${className}`}
+    >
       <div className="flex items-center gap-2 text-muted-foreground">
         <Icon className="size-4" />
         <span className="text-sm">{label}</span>
@@ -43,13 +47,19 @@ export default function MetricCard({
 }
 
 // Placeholder cards while loading
-export function MetricSkeletons({ count = 4 }: { count?: number }) {
+export function MetricSkeletons({
+  count = 4,
+  className = "",
+}: {
+  count?: number;
+  className?: string;
+}) {
   return (
     <>
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="h-27 animate-pulse rounded-2xl border border-border bg-muted/30"
+          className={`h-27 animate-pulse rounded-2xl border border-border bg-muted/30 ${className}`}
         />
       ))}
     </>
