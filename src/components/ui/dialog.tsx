@@ -59,7 +59,12 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-5 rounded-2xl bg-popover p-6 text-sm text-popover-foreground shadow-2xl ring-1 ring-foreground/10 duration-150 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          // No default max-w here on purpose: every caller sets its own, and
+          // a bare `sm:max-w-*` here would always win over a caller's plain
+          // `max-w-*` at >=640px (Tailwind emits responsive variants after
+          // base utilities, so same-specificity cascade favors the media
+          // query) — silently widening/narrowing every dialog on desktop.
+          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-5 rounded-2xl bg-popover p-6 text-sm text-popover-foreground shadow-2xl ring-1 ring-foreground/10 duration-150 outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           className
         )}
         {...props}
@@ -87,7 +92,10 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn("flex flex-col gap-2", className)}
+      // min-w-0: without it, a long untruncated title/description can blow
+      // out this grid item's own width past DialogContent's bounds, taking
+      // every sibling with it — truncate then has nothing real to clip against
+      className={cn("flex min-w-0 flex-col gap-2", className)}
       {...props}
     />
   )
