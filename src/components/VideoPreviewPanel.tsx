@@ -7,20 +7,40 @@ export default function VideoPreviewPanel({
   jobId,
   videoUrl,
   loading,
+  title,
+  // Owning account — admin only, so it can tell whose video this is
+  username,
 }: {
   jobId: string | null;
   videoUrl: string | null;
   loading: boolean;
+  title?: string | null;
+  username?: string | null;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   usePauseOnHidden(videoRef);
 
   return (
-    <div className="flex h-[calc(100vh-var(--nav-h))] shrink-0 flex-col pt-2 pb-8">
-      <div className="flex shrink-0 flex-col gap-1.5 pb-6">
-        <span className="text-sm text-muted-foreground">Aperçu</span>
-        <h2 className="text-[2rem] font-semibold leading-none tracking-[-0.03em]">
-          {jobId ? "Vidéo" : "Aperçu"}
+    // Hidden below lg — on /user (the only place this is reachable on
+    // mobile), row actions take over instead of a side preview panel.
+    // Width is pinned to the video box's own formula below (height * 9/16)
+    // so a long title truncates against it instead of forcing the column
+    // wider than the video itself.
+    <div
+      className="hidden h-[calc(100vh-var(--nav-h))] shrink-0 flex-col pt-2 pb-8 lg:flex"
+      style={{
+        width: "calc((100vh - var(--nav-h) - 2.5rem - 120px) * 9 / 16)",
+      }}
+    >
+      <div className="flex min-w-0 shrink-0 flex-col gap-1.5 pb-6">
+        <span className="truncate text-sm text-muted-foreground">
+          {jobId && username ? `Aperçu · ${username}` : "Aperçu"}
+        </span>
+        <h2
+          className="truncate text-[2rem] font-semibold leading-none tracking-[-0.03em]"
+          title={jobId ? (title ?? undefined) : undefined}
+        >
+          {jobId ? (title ?? "Vidéo") : "Aperçu"}
         </h2>
       </div>
       <div className="h-px shrink-0 bg-border" />

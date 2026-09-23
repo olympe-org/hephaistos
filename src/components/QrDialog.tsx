@@ -17,11 +17,14 @@ export default function QrDialog({
   onClose,
   jobId,
   title,
+  // Owning account — admin only, so it's clear whose video this is
+  username,
 }: {
   open: boolean;
   onClose: () => void;
   jobId: string;
   title: string;
+  username?: string;
 }) {
   const [url, setUrl] = useState<string | null>(null);
 
@@ -56,6 +59,11 @@ export default function QrDialog({
           <DialogTitle className="text-xl font-semibold tracking-tight">
             QR code
           </DialogTitle>
+          {username && (
+            <p className="truncate text-sm text-muted-foreground italic">
+              {username}
+            </p>
+          )}
           <DialogDescription className="truncate">{title}</DialogDescription>
         </DialogHeader>
         <div className="m-auto flex size-[212px] items-center justify-center overflow-hidden rounded-xl bg-white p-4">

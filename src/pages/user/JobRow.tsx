@@ -1,16 +1,21 @@
 import { useState } from "react";
-import { DownloadIcon, LoaderIcon, QrCodeIcon, Share2Icon, XIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { DownloadIcon, EyeIcon, LoaderIcon, QrCodeIcon, Share2Icon, XIcon } from "lucide-react";
 import { toast } from "sonner";
+import ActionsDialog from "@/components/ActionsDialog";
 import IconAction from "@/components/IconAction";
 import QrDialog from "@/components/QrDialog";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { formatBytes, formatDuration } from "@/lib/format";
 import { copyShareLink } from "@/lib/shareLink";
 import type { RenderJob } from "@/store/renderSlice";
 import type { MeJob } from "@/utils/api/auth";
-import { cancelRender, downloadVideo } from "@/utils/api/render";
+import { cancelRender, downloadVideo, getShareLink } from "@/utils/api/render";
 
-// A render's row: in progress (progress + cancel), finished (preview,
-// download, QR), failed or cancelled
+// A render's row. Desktop: hover reveals actions (preview via the side
+// panel, download, QR, share; cancel while running). Mobile has no hover and
+// no render management — tapping a finished row opens a choice dialog
+// instead, and a running one can't be cancelled from here at all.
 export default function JobRow({
   job,
   idx,
@@ -28,8 +33,11 @@ export default function JobRow({
   liveData?: Partial<RenderJob>;
   onCancelled: (id: string) => void;
 }) {
+  const navigate = useNavigate();
   const [qrOpen, setQrOpen] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   const status = liveData?.status ?? job.status;
   const isDone = status === "done";
@@ -54,6 +62,33 @@ export default function JobRow({
       setCancelling(false);
     }
   };
+
+  const handleDownload = () =>
+    downloadVideo(job.job_id, job.title).catch(() =>
+      toast.error("Erreur de téléchargement."),
+    );
+
+  const handleShare = () =>
+    copyShareLink(job.job_id).catch(() =>
+      toast.error("Impossible de générer le lien de partage."),
+    );
+
+  // Mobile has no side preview panel, so "preview" instead opens this render's
+  // own share page — the same fullscreen player used for shared links, which
+  // already has its own save/download button.
+  const handlePreview = async () => {
+    try {
+      const { url } = await getShareLink(job.job_id);
+      const { pathname, search } = new URL(url);
+      navigate(`${pathname}${search}`);
+    } catch {
+      toast.error("Impossible d'ouvrir l'aperçu.");
+    }
+  };
+
+  const handleTitleClick = isDesktop
+    ? () => onSelect(job.job_id)
+    : () => setActionsOpen(true);
 
   const rowClass = isRunning
     ? "bg-violet-500/5 dark:bg-violet-400/5"
@@ -84,7 +119,7 @@ export default function JobRow({
           </span>
 
           <button
-            onClick={isDone ? () => onSelect(job.job_id) : undefined}
+            onClick={isDone ? handleTitleClick : undefined}
             disabled={!isDone}
             className={`flex-1 truncate text-left text-sm font-medium transition-colors ${titleClass}`}
           >
@@ -94,20 +129,23 @@ export default function JobRow({
           {isRunning && (
             <div className="flex shrink-0 items-center gap-2">
               <LoaderIcon className="size-3.5 animate-spin text-violet-500/70 dark:text-violet-400/70" />
-              <IconAction
-                danger
-                aria-label="Annuler"
-                title="Annuler"
-                className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-                onClick={handleCancel}
-                disabled={cancelling}
-              >
-                {cancelling ? (
-                  <LoaderIcon className="animate-spin" />
-                ) : (
-                  <XIcon />
-                )}
-              </IconAction>
+              {/* No cancelling from mobile — a running row is read-only there */}
+              {isDesktop && (
+                <IconAction
+                  danger
+                  aria-label="Annuler"
+                  title="Annuler"
+                  className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+                  onClick={handleCancel}
+                  disabled={cancelling}
+                >
+                  {cancelling ? (
+                    <LoaderIcon className="animate-spin" />
+                  ) : (
+                    <XIcon />
+                  )}
+                </IconAction>
+              )}
             </div>
           )}
 
@@ -127,7 +165,7 @@ export default function JobRow({
             <div className="flex shrink-0 items-center gap-3">
               {(job.file_size_bytes != null ||
                 job.duration_seconds != null) && (
-                <span className="flex items-center gap-2 text-xs tabular-nums text-muted-foreground">
+                <span className="hidden items-center gap-2 text-xs tabular-nums text-muted-foreground lg:flex">
                   {job.duration_seconds != null && (
                     <span>{formatDuration(job.duration_seconds)}</span>
                   )}
@@ -136,37 +174,33 @@ export default function JobRow({
                   )}
                 </span>
               )}
-              <div className="flex items-center gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
-                <IconAction
-                  aria-label="Télécharger"
-                  title="Télécharger"
-                  onClick={() =>
-                    downloadVideo(job.job_id, job.title).catch(() =>
-                      toast.error("Erreur de téléchargement."),
-                    )
-                  }
-                >
-                  <DownloadIcon />
-                </IconAction>
-                <IconAction
-                  aria-label="QR code"
-                  title="QR code"
-                  onClick={() => setQrOpen(true)}
-                >
-                  <QrCodeIcon />
-                </IconAction>
-                <IconAction
-                  aria-label="Partager"
-                  title="Partager"
-                  onClick={() =>
-                    copyShareLink(job.job_id).catch(() =>
-                      toast.error("Impossible de générer le lien de partage."),
-                    )
-                  }
-                >
-                  <Share2Icon />
-                </IconAction>
-              </div>
+              {/* Desktop: hover-reveal icons. Mobile: the title tap above
+                  opens ActionsDialog instead — nothing to show here. */}
+              {isDesktop && (
+                <div className="flex items-center gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+                  <IconAction
+                    aria-label="Télécharger"
+                    title="Télécharger"
+                    onClick={handleDownload}
+                  >
+                    <DownloadIcon />
+                  </IconAction>
+                  <IconAction
+                    aria-label="QR code"
+                    title="QR code"
+                    onClick={() => setQrOpen(true)}
+                  >
+                    <QrCodeIcon />
+                  </IconAction>
+                  <IconAction
+                    aria-label="Partager"
+                    title="Partager"
+                    onClick={handleShare}
+                  >
+                    <Share2Icon />
+                  </IconAction>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -189,6 +223,18 @@ export default function JobRow({
         onClose={() => setQrOpen(false)}
         jobId={job.job_id}
         title={job.title}
+      />
+
+      <ActionsDialog
+        open={actionsOpen}
+        onClose={() => setActionsOpen(false)}
+        subtitle={job.title}
+        actions={[
+          { label: "Voir", Icon: EyeIcon, onClick: handlePreview },
+          { label: "Sauvegarder", Icon: DownloadIcon, onClick: handleDownload },
+          { label: "Partager", Icon: Share2Icon, onClick: handleShare },
+          { label: "Code QR", Icon: QrCodeIcon, onClick: () => setQrOpen(true) },
+        ]}
       />
     </>
   );

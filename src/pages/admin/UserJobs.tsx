@@ -1,12 +1,24 @@
-import { DownloadIcon, LoaderIcon, QrCodeIcon, Share2Icon, TrashIcon, XIcon } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  DownloadIcon,
+  EyeIcon,
+  LoaderIcon,
+  QrCodeIcon,
+  Share2Icon,
+  TrashIcon,
+  XIcon,
+} from "lucide-react";
 import { toast } from "sonner";
+import ActionsDialog from "@/components/ActionsDialog";
 import IconAction from "@/components/IconAction";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { formatBytes, formatDuration } from "@/lib/format";
 import { TERMINAL_STATUSES } from "@/lib/jobs";
 import { copyShareLink } from "@/lib/shareLink";
 import type { RenderJob } from "@/store/renderSlice";
 import type { AdminUser } from "@/utils/api/admin";
-import { cancelRender, downloadVideo } from "@/utils/api/render";
+import { cancelRender, downloadVideo, getShareLink } from "@/utils/api/render";
 
 // Number of finished renders shown per account
 const MAX_DONE_JOBS = 5;
@@ -16,7 +28,9 @@ export interface JobRef {
   title: string;
 }
 
-// An account's renders: in progress (live data) then finished (actions on hover)
+// An account's renders: in progress (live data) then finished. Same
+// desktop/mobile split as the user-facing JobRow: hover-reveal actions and
+// inline cancel on desktop, a tap-to-choose dialog and no cancel on mobile.
 export default function UserJobs({
   user,
   liveJobs,
@@ -34,8 +48,34 @@ export default function UserJobs({
   onShowQr: (job: JobRef) => void;
   onDeleteJob: (job: JobRef) => void;
 }) {
+  const navigate = useNavigate();
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const [actionsJob, setActionsJob] = useState<JobRef | null>(null);
+
   const activeJobs = user.active_jobs ?? [];
   const doneJobs = user.jobs;
+
+  // Admin has no side preview panel below desktop either, so mobile "Voir"
+  // opens the render's own share page — same trick as the user page.
+  const handlePreview = async (job: JobRef) => {
+    try {
+      const { url } = await getShareLink(job.id);
+      const { pathname, search } = new URL(url);
+      navigate(`${pathname}${search}`);
+    } catch {
+      toast.error("Impossible d'ouvrir l'aperçu.");
+    }
+  };
+
+  const handleDownload = (job: JobRef) =>
+    downloadVideo(job.id, job.title).catch(() =>
+      toast.error("Erreur de téléchargement."),
+    );
+
+  const handleShare = (job: JobRef) =>
+    copyShareLink(job.id).catch(() =>
+      toast.error("Impossible de générer le lien de partage."),
+    );
 
   if (activeJobs.length === 0 && doneJobs.length === 0) {
     return <p className="text-sm text-muted-foreground/60">Aucun rendu</p>;
@@ -85,22 +125,25 @@ export default function UserJobs({
               {isActive && (
                 <div className="flex shrink-0 items-center gap-2">
                   <LoaderIcon className="size-3.5 shrink-0 animate-spin text-muted-foreground/60" />
-                  <IconAction
-                    danger
-                    aria-label="Annuler"
-                    title="Annuler"
-                    className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-                    onClick={() =>
-                      cancelRender(job.job_id)
-                        .then(() => {
-                          onCancelJob(job.job_id);
-                          toast.success("Rendu annulé.");
-                        })
-                        .catch(() => toast.error("Erreur lors de l'annulation."))
-                    }
-                  >
-                    <XIcon />
-                  </IconAction>
+                  {/* No cancelling from mobile — a running row is read-only there */}
+                  {isDesktop && (
+                    <IconAction
+                      danger
+                      aria-label="Annuler"
+                      title="Annuler"
+                      className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+                      onClick={() =>
+                        cancelRender(job.job_id)
+                          .then(() => {
+                            onCancelJob(job.job_id);
+                            toast.success("Rendu annulé.");
+                          })
+                          .catch(() => toast.error("Erreur lors de l'annulation."))
+                      }
+                    >
+                      <XIcon />
+                    </IconAction>
+                  )}
                 </div>
               )}
             </div>
@@ -111,6 +154,7 @@ export default function UserJobs({
         {doneJobs.slice(0, MAX_DONE_JOBS).map((job, idx) => {
           const isSelected = selectedJobId === job.id;
           const hasMeta = job.file_size_bytes != null || job.duration_seconds != null;
+          const ref: JobRef = { id: job.id, title: job.title };
 
           return (
             <div
@@ -123,7 +167,9 @@ export default function UserJobs({
                 {idx + 1}
               </span>
               <button
-                onClick={() => onSelectJob(job.id)}
+                onClick={() =>
+                  isDesktop ? onSelectJob(job.id) : setActionsJob(ref)
+                }
                 className={`flex-1 truncate text-left font-medium transition-colors ${
                   isSelected
                     ? "text-foreground"
@@ -134,7 +180,7 @@ export default function UserJobs({
               </button>
               <div className="flex shrink-0 items-center gap-3">
                 {hasMeta && (
-                  <span className="flex items-center gap-2 text-xs tabular-nums text-muted-foreground">
+                  <span className="hidden items-center gap-2 text-xs tabular-nums text-muted-foreground lg:flex">
                     {job.duration_seconds != null && (
                       <span>{formatDuration(job.duration_seconds)}</span>
                     )}
@@ -143,45 +189,41 @@ export default function UserJobs({
                     )}
                   </span>
                 )}
-                <div className="flex items-center gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
-                  <IconAction
-                    aria-label="Télécharger"
-                    title="Télécharger"
-                    onClick={() =>
-                      downloadVideo(job.id, job.title).catch(() =>
-                        toast.error("Erreur de téléchargement."),
-                      )
-                    }
-                  >
-                    <DownloadIcon />
-                  </IconAction>
-                  <IconAction
-                    aria-label="QR code"
-                    title="QR code"
-                    onClick={() => onShowQr({ id: job.id, title: job.title })}
-                  >
-                    <QrCodeIcon />
-                  </IconAction>
-                  <IconAction
-                    aria-label="Partager"
-                    title="Partager"
-                    onClick={() =>
-                      copyShareLink(job.id).catch(() =>
-                        toast.error("Impossible de générer le lien de partage."),
-                      )
-                    }
-                  >
-                    <Share2Icon />
-                  </IconAction>
-                  <IconAction
-                    danger
-                    aria-label="Supprimer"
-                    title="Supprimer"
-                    onClick={() => onDeleteJob({ id: job.id, title: job.title })}
-                  >
-                    <TrashIcon />
-                  </IconAction>
-                </div>
+                {/* Desktop: hover-reveal icons. Mobile: the title tap above
+                    opens ActionsDialog instead — nothing to show here. */}
+                {isDesktop && (
+                  <div className="flex items-center gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+                    <IconAction
+                      aria-label="Télécharger"
+                      title="Télécharger"
+                      onClick={() => handleDownload(ref)}
+                    >
+                      <DownloadIcon />
+                    </IconAction>
+                    <IconAction
+                      aria-label="QR code"
+                      title="QR code"
+                      onClick={() => onShowQr(ref)}
+                    >
+                      <QrCodeIcon />
+                    </IconAction>
+                    <IconAction
+                      aria-label="Partager"
+                      title="Partager"
+                      onClick={() => handleShare(ref)}
+                    >
+                      <Share2Icon />
+                    </IconAction>
+                    <IconAction
+                      danger
+                      aria-label="Supprimer"
+                      title="Supprimer"
+                      onClick={() => onDeleteJob(ref)}
+                    >
+                      <TrashIcon />
+                    </IconAction>
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -193,6 +235,24 @@ export default function UserJobs({
           +{doneJobs.length - MAX_DONE_JOBS} de plus
         </div>
       )}
+
+      <ActionsDialog
+        open={actionsJob !== null}
+        onClose={() => setActionsJob(null)}
+        subtitle={actionsJob?.title ?? ""}
+        username={user.username}
+        actions={
+          actionsJob
+            ? [
+                { label: "Voir", Icon: EyeIcon, onClick: () => handlePreview(actionsJob) },
+                { label: "Télécharger", Icon: DownloadIcon, onClick: () => handleDownload(actionsJob) },
+                { label: "Partager", Icon: Share2Icon, onClick: () => handleShare(actionsJob) },
+                { label: "Code QR", Icon: QrCodeIcon, onClick: () => onShowQr(actionsJob) },
+                { label: "Supprimer", Icon: TrashIcon, danger: true, onClick: () => onDeleteJob(actionsJob) },
+              ]
+            : []
+        }
+      />
     </div>
   );
 }
