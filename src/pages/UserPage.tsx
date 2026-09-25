@@ -56,6 +56,19 @@ export default function UserPage() {
         : null,
     );
 
+  // Locally remove a deleted render — always a done job in practice, but
+  // filtering both lists keeps this safe regardless of where it came from
+  const removeJob = (id: string) =>
+    setMe((m) =>
+      m
+        ? {
+            ...m,
+            active_jobs: m.active_jobs.filter((j) => j.job_id !== id),
+            done_jobs: m.done_jobs.filter((j) => j.job_id !== id),
+          }
+        : null,
+    );
+
   return (
     <section className="flex gap-10 lg:px-10">
       <div className="flex h-[calc(100vh-var(--nav-h))] w-full flex-col">
@@ -87,6 +100,10 @@ export default function UserPage() {
             selectedJobId={selectedJobId}
             onSelectJob={setSelectedJobId}
             onJobCancelled={removeActiveJob}
+            onJobDeleted={(id) => {
+              removeJob(id);
+              if (id === selectedJobId) setSelectedJobId(null);
+            }}
             onCreate={() => navigate("/create-video")}
           />
         </div>

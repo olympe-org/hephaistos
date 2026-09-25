@@ -2,6 +2,7 @@ import type { AppDispatch } from "@/store";
 import { updateJob } from "@/store/renderSlice";
 import type { RenderJob } from "@/store/renderSlice";
 import type { CreateVideoState } from "@/store/createVideoSlice";
+import { downloadBlob, isLaptopViewport, saveVideo } from "@/lib/videoDownload";
 import { fetchAuth } from "./http";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -214,15 +215,25 @@ function sanitizeFilename(name: string): string {
 
 export async function downloadVideo(jobId: string, title?: string): Promise<void> {
   const blob = await fetchVideoBlob(jobId);
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
   const name = title && sanitizeFilename(title);
-  a.download = `${name || jobId}.mp4`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  const filename = `${name || jobId}.mp4`;
+
+  // Laptop: plain forced download, as before. Anything narrower (phone/
+  // tablet): native share sheet, so it actually lands in the photo library
+  // instead of a generic Downloads/Files folder.
+  if (isLaptopViewport()) {
+    downloadBlob(blob, filename);
+    return;
+  }
+
+  try {
+    await saveVideo(blob, filename);
+  } catch (err) {
+    // User dismissed the share sheet — not a real error, existing callers
+    // shouldn't show a toast for it.
+    if (err instanceof DOMException && err.name === "AbortError") return;
+    throw err;
+  }
 }
 
 // ─── GET /jobs/{job_id}/share-link ────────────────────────────────────────────

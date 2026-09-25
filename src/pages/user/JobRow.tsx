@@ -1,8 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { DownloadIcon, EyeIcon, LoaderIcon, QrCodeIcon, Share2Icon, XIcon } from "lucide-react";
+import {
+  DownloadIcon,
+  EyeIcon,
+  LoaderIcon,
+  QrCodeIcon,
+  Share2Icon,
+  TrashIcon,
+  XIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 import ActionsDialog from "@/components/ActionsDialog";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import IconAction from "@/components/IconAction";
 import QrDialog from "@/components/QrDialog";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -13,9 +22,9 @@ import type { MeJob } from "@/utils/api/auth";
 import { cancelRender, downloadVideo, getShareLink } from "@/utils/api/render";
 
 // A render's row. Desktop: hover reveals actions (preview via the side
-// panel, download, QR, share; cancel while running). Mobile has no hover and
-// no render management — tapping a finished row opens a choice dialog
-// instead, and a running one can't be cancelled from here at all.
+// panel, download, QR, share, delete; cancel while running). Mobile has no
+// hover — tapping a finished row opens a choice dialog instead, and a
+// running one can't be cancelled from here at all.
 export default function JobRow({
   job,
   idx,
@@ -24,6 +33,7 @@ export default function JobRow({
   onSelect,
   liveData,
   onCancelled,
+  onDeleted,
 }: {
   job: MeJob;
   idx: number;
@@ -32,10 +42,12 @@ export default function JobRow({
   onSelect: (id: string) => void;
   liveData?: Partial<RenderJob>;
   onCancelled: (id: string) => void;
+  onDeleted: (id: string) => void;
 }) {
   const navigate = useNavigate();
   const [qrOpen, setQrOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
@@ -72,6 +84,16 @@ export default function JobRow({
     copyShareLink(job.job_id).catch(() =>
       toast.error("Impossible de générer le lien de partage."),
     );
+
+  const handleDelete = async () => {
+    try {
+      await cancelRender(job.job_id);
+      onDeleted(job.job_id);
+      toast.success("Vidéo supprimée.");
+    } catch {
+      toast.error("Erreur lors de la suppression.");
+    }
+  };
 
   // Mobile has no side preview panel, so "preview" instead opens this render's
   // own share page — the same fullscreen player used for shared links, which
@@ -199,6 +221,14 @@ export default function JobRow({
                   >
                     <Share2Icon />
                   </IconAction>
+                  <IconAction
+                    danger
+                    aria-label="Supprimer"
+                    title="Supprimer"
+                    onClick={() => setConfirmDelete(true)}
+                  >
+                    <TrashIcon />
+                  </IconAction>
                 </div>
               )}
             </div>
@@ -234,7 +264,23 @@ export default function JobRow({
           { label: "Sauvegarder", Icon: DownloadIcon, onClick: handleDownload },
           { label: "Partager", Icon: Share2Icon, onClick: handleShare },
           { label: "Code QR", Icon: QrCodeIcon, onClick: () => setQrOpen(true) },
+          {
+            label: "Supprimer",
+            Icon: TrashIcon,
+            danger: true,
+            onClick: () => setConfirmDelete(true),
+          },
         ]}
+      />
+
+      <ConfirmDialog
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={handleDelete}
+        title="Supprimer la vidéo"
+        description="Cette vidéo sera supprimée du serveur. Cette action est irréversible."
+        subtitle={job.title}
+        danger
       />
     </>
   );

@@ -12,6 +12,7 @@ export default function VideosList({
   selectedJobId,
   onSelectJob,
   onJobCancelled,
+  onJobDeleted,
   onCreate,
 }: {
   me: MeResponse | null;
@@ -19,6 +20,7 @@ export default function VideosList({
   selectedJobId: string | null;
   onSelectJob: (id: string) => void;
   onJobCancelled: (id: string) => void;
+  onJobDeleted: (id: string) => void;
   onCreate: () => void;
 }) {
   const jobs = [
@@ -75,6 +77,7 @@ export default function VideosList({
                   onSelect={onSelectJob}
                   liveData={liveJobs[job.job_id]}
                   onCancelled={onJobCancelled}
+                  onDeleted={onJobDeleted}
                 />
               ))}
             </div>
