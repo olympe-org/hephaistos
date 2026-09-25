@@ -6,12 +6,12 @@ import { TILE } from "@/lib/tokens";
 import { templates } from "@/utils";
 import { useTheme } from "@/utils/useTheme";
 import { CONTAINER, H2, NBSP } from "./shared";
-import youtubePreviewDark from "/images/preview-youtube-dark.png";
-import youtubePreviewLight from "/images/preview-youtube-light.png";
-import configurationPreviewDark from "/images/preview-configuration-dark.png";
-import configurationPreviewLight from "/images/preview-configuration-light.png";
-import downloadPreviewDark from "/images/preview-download-dark.png";
-import downloadPreviewLight from "/images/preview-download-light.png";
+import youtubePreviewDark from "/images/preview-youtube-dark.webp";
+import youtubePreviewLight from "/images/preview-youtube-light.webp";
+import configurationPreviewDark from "/images/preview-configuration-dark.webp";
+import configurationPreviewLight from "/images/preview-configuration-light.webp";
+import downloadPreviewDark from "/images/preview-download-dark.webp";
+import downloadPreviewLight from "/images/preview-download-light.webp";
 
 interface Step {
   step: string;
@@ -49,7 +49,7 @@ const STEPS: Step[] = [
     image: {
       light: youtubePreviewLight,
       dark: youtubePreviewDark,
-      align: "center",
+      align: "contain",
     },
   },
   {
@@ -166,7 +166,7 @@ function StepVisual({
       alt={step.title}
       className={`absolute max-w-none rounded-xl border border-border shadow-2xl animate-in fade-in duration-500 ${
         step.image.align === "center"
-          ? "top-[8%] left-1/2 w-[124%] -translate-x-1/2"
+          ? "top-[3%] left-1/2 w-[124%] -translate-x-1/2"
           : "top-1/2 left-[5%] w-[90%] -translate-y-1/2"
       }`}
     />

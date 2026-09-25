@@ -1,8 +1,8 @@
 import { CheckIcon, DatabaseIcon, LinkIcon, SearchIcon } from "lucide-react";
 import TemplatePreview from "@/components/TemplatePreview";
 import { FAKE_PREVIEW } from "@/utils";
-import configurationPreviewDark from "/images/preview-configuration-dark.png";
-import configurationPreviewLight from "/images/preview-configuration-light.png";
+import configurationPreviewDark from "/images/preview-configuration-dark.webp";
+import configurationPreviewLight from "/images/preview-configuration-light.webp";
 
 // Mini interfaces illustrating each card in the "You stay in control" section
 
