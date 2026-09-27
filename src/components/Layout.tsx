@@ -1,7 +1,7 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Navbar from "./Navbar";
-import MobileGuard from "./MobileGuard";
+// import MobileGuard from "./MobileGuard"; // TEMPORARILY DISABLED — see below
 import TokenPolling from "./TokenPolling";
 import { useAppSelector } from "@/store";
 import { useRenderNotifier } from "@/hooks/useRenderNotifier";
@@ -68,9 +68,10 @@ export default function Layout() {
           </Button>
         </div>
       )}
-      {/* Only the editor needs real screen space — every other page has its
-          own mobile layout. */}
-      {pathname === "/create-video" && <MobileGuard />}
+      {/* TEMPORARILY DISABLED — was blocking a demo-recording tool that runs
+          in a narrow viewport. Only the editor needs real screen space;
+          every other page has its own mobile layout. Re-enable once done:
+          {pathname === "/create-video" && <MobileGuard />} */}
       <Navbar
         showBanner={showBanner}
         bannerIn={bannerIn}
